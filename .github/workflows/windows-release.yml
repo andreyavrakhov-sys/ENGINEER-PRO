@@ -34,9 +34,18 @@ jobs:
           "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
       - name: Install dependencies
         run: npm ci
-      - name: Set package version for build
+           - name: Set package version for build
         shell: pwsh
-        run: npm version $env:RELEASE_VERSION --no-git-tag-version --ignore-scripts
+        run: |
+          $current = node -p "require('./package.json').version"
+          if ($current -eq $env:RELEASE_VERSION) {
+            Write-Host "Version already set: $current"
+          } else {
+            npm version $env:RELEASE_VERSION --no-git-tag-version --ignore-scripts
+            if ($LASTEXITCODE -ne 0) {
+              throw "npm version failed"
+            }
+          }
       - name: Build Windows installer and update metadata
         run: npm run dist -- --publish never
       - name: Publish GitHub release
