@@ -91,3 +91,40 @@ ipcMain.handle('ai:auto',async(_e,{prompt,allowPaid=false})=>{
  }
  throw Error('Усі доступні провайдери не відповіли. '+attempts.join(' | '));
 });
+
+const documentReader=require('./document-reader');
+ipcMain.handle('document:read',async(_e,p)=>documentReader.read(p));
+
+const {compare:compareEngineeringDocs}=require('./compare-engine');
+ipcMain.handle('document:compare',(_event,{a,b})=>{if(!Array.isArray(a)||!Array.isArray(b)||a.length>3000||b.length>3000)throw Error('Некоректні або завеликі таблиці');return compareEngineeringDocs(a,b)});
+
+const estimateImporter=require('./estimate-importer');
+ipcMain.handle('estimate:import',(_e,p)=>estimateImporter.extractFile(p));
+
+const {execFile}=require('child_process');
+const crypto=require('crypto');
+const shortcutsFile='launchers.json';
+function getShortcuts(){return read(shortcutsFile,[])}
+ipcMain.handle('launchers:list',()=>getShortcuts());
+ipcMain.handle('launchers:add',async(_event,kind)=>{
+ if(!['app','folder'].includes(kind))throw Error('Невідомий тип ярлика');
+ const options=kind==='app'?{title:'Оберіть програму',properties:['openFile'],filters:[{name:'Програми Windows',extensions:['exe'] }]}:{title:'Оберіть папку',properties:['openDirectory']};
+ const r=await dialog.showOpenDialog(win,options);
+ if(r.canceled||!r.filePaths.length)return null;
+ const p=r.filePaths[0];const stat=fs.statSync(p);
+ if(kind==='app'&&(!stat.isFile()||path.extname(p).toLowerCase()!=='.exe'))throw Error('Потрібен файл .exe');
+ if(kind==='folder'&&!stat.isDirectory())throw Error('Потрібна папка');
+ const items=getShortcuts();if(items.some(x=>x.path.toLowerCase()===p.toLowerCase()))return null;
+ const item={id:crypto.randomUUID(),kind,name:path.basename(p),path:p};items.push(item);write(shortcutsFile,items);return item;
+});
+ipcMain.handle('launchers:remove',(_event,id)=>{const items=getShortcuts();write(shortcutsFile,items.filter(x=>x.id!==id));return true});
+ipcMain.handle('launchers:open',async(_event,id)=>{
+ const item=getShortcuts().find(x=>x.id===id);if(!item)throw Error('Ярлик не знайдено');
+ const p=item.path;if(!path.isAbsolute(p)||!fs.existsSync(p))throw Error('Шлях більше не існує');
+ const stat=fs.statSync(p);
+ if(item.kind==='folder'){if(!stat.isDirectory())throw Error('Це не папка');const error=await shell.openPath(p);if(error)throw Error(error);return true}
+ if(item.kind!=='app'||!stat.isFile()||path.extname(p).toLowerCase()!=='.exe')throw Error('Неприпустимий файл програми');
+ if(process.platform!=='win32')throw Error('Запуск EXE підтримується у Windows');
+ await new Promise((resolve,reject)=>{const child=execFile(p,[],{cwd:path.dirname(p),windowsHide:false},err=>{if(err)console.error('Програма завершилась:',err.message)});child.once('spawn',resolve);child.once('error',reject)});
+ return true;
+});

@@ -1,8 +1,8 @@
 {
   "name": "engineer-pro",
-  "version": "0.2.3",
+  "version": "0.4.0",
   "private": true,
-  "description": "ENGINEER PRO desktop with opt-in GitHub auto-updates",
+  "description": "ENGINEER PRO desktop with free-provider fallback and GitHub auto-updates",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -20,10 +20,13 @@
     },
     "files": [
       "main.js",
+      "document-reader.js",
       "preload.js",
       "index.html",
       "package.json",
-      "update-config.json"
+      "update-config.json",
+      "compare-engine.js",
+      "estimate-importer.js"
     ],
     "win": {
       "target": [
