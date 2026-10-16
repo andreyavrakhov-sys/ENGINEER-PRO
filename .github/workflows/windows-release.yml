@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'New version, e.g. 0.2.4 (must not exist as a release)'
+        description: 'Version, e.g. 0.4.0'
         required: true
         type: string
 
@@ -21,20 +21,28 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
+
       - name: Validate version
         shell: pwsh
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
         run: |
-          $version = '${{ inputs.version }}'
-          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must look like 0.2.4' }
+          $version = $env:REQUESTED_VERSION
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            throw 'Version must look like 0.4.0'
+          }
           "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
+
       - name: Install dependencies
         run: npm ci
-           - name: Set package version for build
+
+      - name: Set package version for build
         shell: pwsh
         run: |
           $current = node -p "require('./package.json').version"
@@ -46,8 +54,26 @@ jobs:
               throw "npm version failed"
             }
           }
+
       - name: Build Windows installer and update metadata
         run: npm run dist -- --publish never
+
+      - name: Verify installer assets
+        shell: pwsh
+        run: |
+          $v = $env:RELEASE_VERSION
+          $files = @(
+            "dist/ENGINEER_PRO_Setup_$v.exe",
+            "dist/ENGINEER_PRO_Setup_$v.exe.blockmap",
+            "dist/latest.yml"
+          )
+          foreach ($file in $files) {
+            if (-not (Test-Path $file)) {
+              throw "Missing build asset: $file"
+            }
+            Write-Host "OK: $file"
+          }
+
       - name: Publish GitHub release
         shell: pwsh
         env:
@@ -55,7 +81,9 @@ jobs:
         run: |
           $tag = "v$env:RELEASE_VERSION"
           gh release view $tag *> $null
-          if ($LASTEXITCODE -eq 0) { throw "Release $tag already exists" }
+          if ($LASTEXITCODE -eq 0) {
+            throw "Release $tag already exists"
+          }
           gh release create $tag `
             "dist/ENGINEER_PRO_Setup_$env:RELEASE_VERSION.exe" `
             "dist/ENGINEER_PRO_Setup_$env:RELEASE_VERSION.exe.blockmap" `
