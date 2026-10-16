@@ -1,0 +1,1 @@
+Виправлення GitHub Actions: якщо package.json вже містить версію, передану при Run workflow, команда npm version пропускається. Це усуває помилку npm error Version not changed. Запускайте workflow з 0.4.0, якщо реліз v0.4.0 ще не створений.
