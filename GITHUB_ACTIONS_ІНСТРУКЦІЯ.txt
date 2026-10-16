@@ -1,0 +1,10 @@
+ENGINEER PRO — GitHub Actions
+
+1. У репозиторій https://github.com/andreyavrakhov-sys/ENGINEER-PRO додайте файли з папки ENGINEER_PRO_2 до КОРЕНЯ репозиторію (package.json, main.js, index.html тощо), а файл .github/workflows/windows-release.yml — саме за таким шляхом. Не додавайте node_modules, dist, .env, API-ключі.
+2. GitHub → Settings → Actions → General → Workflow permissions → Read and write permissions → Save (якщо потрібно; workflow потребує contents: write).
+3. GitHub → Actions → Build and publish ENGINEER PRO → Run workflow → version: 0.2.4 → Run workflow.
+4. Дочекайтеся зеленого статусу. У Releases з’являться .exe, .blockmap і latest.yml.
+5. Встановлена 0.2.3 повинна виявити 0.2.4, якщо її механізм оновлення налаштований правильно.
+
+ВАЖЛИВО: цей архів містить вихідний код з раніше наданого ENGINEER PRO 0.2.2 з оновленим номером 0.2.3 і доданим workflow. Якщо ви вносили локальні зміни після 0.2.2, не замінюйте ними свій код без перевірки. Перенесіть лише .github/workflows/windows-release.yml та .gitignore.
+Не публікуйте справжні ключі. Автоматичне збирання не означає автоматичного створення нових функцій: зміни коду треба завантажити в репозиторій.

@@ -1,0 +1,58 @@
+{
+  "name": "engineer-pro",
+  "version": "0.2.3",
+  "private": true,
+  "description": "ENGINEER PRO desktop with opt-in GitHub auto-updates",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "ua.engineerpro.desktop",
+    "productName": "ENGINEER PRO",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "package.json",
+      "update-config.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "artifactName": "ENGINEER_PRO_Setup_${version}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "andreyavrakhov-sys",
+        "repo": "ENGINEER-PRO",
+        "releaseType": "release"
+      }
+    ],
+    "generateUpdatesFilesForAllChannels": false
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2"
+  }
+}
