@@ -32,9 +32,9 @@ ipcMain.handle('file:pick',async()=>{const r=await dialog.showOpenDialog(win,{pr
 ipcMain.handle('file:open',async(_e,p)=>{if(typeof p!=='string'||!path.isAbsolute(p)||!fs.existsSync(p))throw Error('Файл не знайдено');return shell.openPath(p)});
 ipcMain.handle('folder:open',async()=>{const r=await dialog.showOpenDialog(win,{properties:['openDirectory']});if(r.canceled)return null;await shell.openPath(r.filePaths[0]);return r.filePaths[0]});
 ipcMain.handle('file:text',async(_e,p)=>{if(!/\.(txt|md|csv|json)$/i.test(p))throw Error('Для цього формату потрібен модуль обробки документів');if(fs.statSync(p).size>2e6)throw Error('Файл понад 2 МБ');return fs.readFileSync(p,'utf8')});
-ipcMain.handle('secrets:set',(_e,{provider,key})=>{if(!['openai','gemini','anthropic'].includes(provider))throw Error('Невідомий провайдер');if(!safeStorage.isEncryptionAvailable())throw Error('Захищене сховище недоступне');const s=read('secrets.json',{});s[provider]=safeStorage.encryptString(key).toString('base64');write('secrets.json',s);return true});
+ipcMain.handle('secrets:set',(_e,{provider,key})=>{if(!['openai','gemini','anthropic','openrouter'].includes(provider))throw Error('Невідомий провайдер');if(!safeStorage.isEncryptionAvailable())throw Error('Захищене сховище недоступне');const s=read('secrets.json',{});s[provider]=safeStorage.encryptString(key).toString('base64');write('secrets.json',s);return true});
 ipcMain.handle('secrets:status',()=>Object.keys(read('secrets.json',{})));
-const keyPages={openai:'https://platform.openai.com/api-keys',gemini:'https://aistudio.google.com/app/apikey',anthropic:'https://console.anthropic.com/settings/keys'};
+const keyPages={openai:'https://platform.openai.com/api-keys',gemini:'https://aistudio.google.com/app/apikey',anthropic:'https://console.anthropic.com/settings/keys',openrouter:'https://openrouter.ai/settings/keys'};
 ipcMain.handle('secrets:open-page',async(_e,provider)=>{if(!Object.hasOwn(keyPages,provider))throw Error('Невідомий провайдер');await shell.openExternal(keyPages[provider]);return true});
 ipcMain.handle('secrets:import',async()=>{
  if(!safeStorage.isEncryptionAvailable())throw Error('Захищене сховище недоступне');
@@ -53,18 +53,41 @@ ipcMain.handle('secrets:import',async()=>{
    values[match[1].toLowerCase()]=match[2].trim().replace(/^['"]|['"]$/g,'');
   }
  }
- const aliases={OPENAI_API_KEY:'openai',GEMINI_API_KEY:'gemini',GOOGLE_API_KEY:'gemini',ANTHROPIC_API_KEY:'anthropic'};
+ const aliases={OPENAI_API_KEY:'openai',GEMINI_API_KEY:'gemini',GOOGLE_API_KEY:'gemini',ANTHROPIC_API_KEY:'anthropic',OPENROUTER_API_KEY:'openrouter'};
  const normalized={};for(const [name,value] of Object.entries(values)){
   const provider=aliases[name]||name.toLowerCase();
   if(!Object.hasOwn(keyPages,provider))continue;
   if(typeof value!=='string'||!value.trim()||value.length>4096)throw Error('Некоректний ключ для '+provider);
   normalized[provider]=value.trim();
  }
- if(!Object.keys(normalized).length)throw Error('У файлі немає підтримуваних ключів: openai, gemini, anthropic');
+ if(!Object.keys(normalized).length)throw Error('У файлі немає підтримуваних ключів: openai, gemini, anthropic, openrouter');
  const saved=read('secrets.json',{});for(const [provider,key] of Object.entries(normalized))saved[provider]=safeStorage.encryptString(key).toString('base64');
  write('secrets.json',saved);return {imported:Object.keys(normalized)};
 });
 
 function getKey(provider){const v=read('secrets.json',{})[provider];if(!v)throw Error('Додайте API-ключ у налаштуваннях');return safeStorage.decryptString(Buffer.from(v,'base64'))}
-async function request(url,opts){const controller=new AbortController();const t=setTimeout(()=>controller.abort(),60000);try{const r=await fetch(url,{...opts,signal:controller.signal});const raw=await r.text();let data;try{data=JSON.parse(raw)}catch{throw Error('Сервер повернув не-JSON відповідь')}if(!r.ok)throw Error(data.error?.message||data.message||`HTTP ${r.status}`);return data}finally{clearTimeout(t)}}
-ipcMain.handle('ai:ask',async(_e,{provider,model,prompt})=>{if(typeof prompt!=='string'||!prompt.trim()||prompt.length>30000)throw Error('Некоректний запит');if(!/^[\w.\-/:]{1,120}$/.test(model))throw Error('Некоректна назва моделі');if(provider==='openai'){const d=await request('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+getKey(provider)},body:JSON.stringify({model,messages:[{role:'user',content:prompt}]})});return d.choices?.[0]?.message?.content||'Порожня відповідь'}if(provider==='gemini'){const d=await request(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':getKey(provider)},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});return d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('\n')||'Порожня відповідь'}if(provider==='anthropic'){const d=await request('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getKey(provider),'anthropic-version':'2023-06-01'},body:JSON.stringify({model,max_tokens:2048,messages:[{role:'user',content:prompt}]})});return d.content?.map(c=>c.text||'').join('\n')||'Порожня відповідь'}if(provider==='ollama'){const d=await request('http://127.0.0.1:11434/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model,prompt,stream:false})});return d.response||'Порожня відповідь'}throw Error('Невідомий провайдер')});
+async function request(url,opts){const controller=new AbortController();const t=setTimeout(()=>controller.abort(),60000);try{const r=await fetch(url,{...opts,signal:controller.signal});const raw=await r.text();let data;try{data=JSON.parse(raw)}catch{throw Error('Сервер повернув не-JSON відповідь')}if(!r.ok)throw Error(`HTTP ${r.status}: `+(data.error?.message||data.message||'Помилка API'));return data}finally{clearTimeout(t)}}
+async function askOne({provider,model,prompt}){if(typeof prompt!=='string'||!prompt.trim()||prompt.length>30000)throw Error('Некоректний запит');if(!/^[\w.\-/:]{1,120}$/.test(model))throw Error('Некоректна назва моделі');if(provider==='openai'){const d=await request('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+getKey(provider)},body:JSON.stringify({model,messages:[{role:'user',content:prompt}]})});return d.choices?.[0]?.message?.content||'Порожня відповідь'}if(provider==='gemini'){const d=await request(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':getKey(provider)},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});return d.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('\n')||'Порожня відповідь'}if(provider==='anthropic'){const d=await request('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':getKey(provider),'anthropic-version':'2023-06-01'},body:JSON.stringify({model,max_tokens:2048,messages:[{role:'user',content:prompt}]})});return d.content?.map(c=>c.text||'').join('\n')||'Порожня відповідь'}if(provider==='openrouter'){const d=await request('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+getKey(provider),'HTTP-Referer':'https://github.com/andreyavrakhov-sys/ENGINEER-PRO','X-Title':'ENGINEER PRO'},body:JSON.stringify({model,messages:[{role:'user',content:prompt}]})});return d.choices?.[0]?.message?.content||'Порожня відповідь'}if(provider==='ollama'){const d=await request('http://127.0.0.1:11434/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model,prompt,stream:false})});return d.response||'Порожня відповідь'}throw Error('Невідомий провайдер')};
+ipcMain.handle('ai:ask',async(_e,args)=>askOne(args));
+
+// Auto mode: sequential fallback. Each candidate uses its own valid credentials.
+// Never use paid APIs automatically. No key rotation to evade provider limits.
+ipcMain.handle('ai:auto',async(_e,{prompt,allowPaid=false})=>{
+ if(typeof prompt!=='string'||!prompt.trim()||prompt.length>30000)throw Error('Некоректний запит');
+ const available=new Set(Object.keys(read('secrets.json',{})));
+ const candidates=[
+  ...(available.has('gemini')?[{provider:'gemini',model:'gemini-2.5-flash'}]:[]),
+  ...(available.has('openrouter')?[{provider:'openrouter',model:'openrouter/free'}]:[]),
+  {provider:'ollama',model:'llama3.2'},
+  ...(allowPaid?[
+   ...(available.has('openai')?[{provider:'openai',model:'gpt-4o-mini'}]:[]),
+   ...(available.has('anthropic')?[{provider:'anthropic',model:'claude-3-5-haiku-latest'}]:[])
+  ]:[])
+ ];
+ const attempts=[];
+ for(const item of candidates){
+  try{const answer=await askOne({...item,prompt});if(answer&&answer!=='Порожня відповідь')return {answer,provider:item.provider,model:item.model,attempts};throw Error('Порожня відповідь')}
+  catch(e){attempts.push(item.provider+': '+e.message)}
+ }
+ throw Error('Усі доступні провайдери не відповіли. '+attempts.join(' | '));
+});
