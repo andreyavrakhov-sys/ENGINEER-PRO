@@ -32,9 +32,10 @@ jobs:
         run: |
           $asar = Get-ChildItem -Path dist -Filter app.asar -Recurse | Select-Object -First 1
           if (-not $asar) { throw 'app.asar not found' }
-          $entries = npx --yes @electron/asar list $asar.FullName
+          $rawEntries = & npx --yes @electron/asar list $asar.FullName
           if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect app.asar' }
-          foreach ($file in @('/main.js', '/shared/sync.js', '/sync.html', '/preload.js')) {
+          $entries = @($rawEntries | ForEach-Object { ($_.ToString().Trim() -replace '\\', '/').TrimStart('/') })
+          foreach ($file in @('main.js', 'shared/sync.js', 'sync.html', 'preload.js')) {
             if ($entries -notcontains $file) { throw "Missing packaged module: $file" }
           }
       - uses: actions/upload-artifact@v4
