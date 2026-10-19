@@ -13,12 +13,43 @@ function classify(item){
  if(/^(КР|КБ|Е\d|ЕН|РН|М\d|Ц\d)/u.test(code)||/\b(монтаж|демонтаж|прокладання|установлення|влаштування|випробування|налагодження)\b/u.test(name))return 'Робота (попередньо)';
  return 'Тип не визначено';
 }
-function compare(a,b){const left=parse(a),right=parse(b);const byName=new Map();right.items.forEach((v,i)=>{const k=norm(v.name);if(!byName.has(k))byName.set(k,[]);byName.get(k).push({v,i})});const used=new Set(),results=[];for(const x of left.items){const matches=(byName.get(norm(x.name))||[]).filter(z=>!used.has(z.i));if(matches.length!==1){results.push({name:x.name,code:x.code,unitA:x.unit,qtyA:x.qty,unitB:'',qtyB:null,diff:null,status:matches.length?'Неоднозначно: кілька збігів':'Відсутня у B',lineA:x.line,lineB:'',rawA:x.raw,rawB:''});continue}const {v:y,i}=matches[0];used.add(i);let status='Збіг назви, обсяг не підтверджено',diff=null;if(x.qty!==null&&y.qty!==null){const cx=canonical(x.unit,x.qty),cy=canonical(y.unit,y.qty);if(cx.u&&cx.u===cy.u){diff=Number((cx.q-cy.q).toFixed(6));status=Math.abs(diff)<1e-7?'Збіг назви, одиниці та кількості':'Розбіжність кількості'}else status='Несумісні або невідомі одиниці'}results.push({name:x.name,code:x.code,unitA:x.unit,qtyA:x.qty,unitB:y.unit,qtyB:y.qty,diff,status,lineA:x.line,lineB:y.line,rawA:x.raw,rawB:y.raw})}
-right.items.forEach((y,i)=>{if(!used.has(i))results.push({name:y.name,code:y.code,unitA:'',qtyA:null,unitB:y.unit,qtyB:y.qty,diff:null,status:'Додаткова позиція у B',lineA:'',lineB:y.line,rawA:'',rawB:y.raw})});
-for(const r of results){
- r.type=classify({name:r.name,code:r.code});
- r.codeCheck=(r.lineA&&r.lineB)?'Перевірити відповідність шифру за оригіналом':'Шифр не зіставлено';
- r.review='Потребує перевірки за проєктом і кошторисними нормами';
+function compare(a,b){
+ const left=parse(a),right=parse(b),used=new Set(),results=[];
+ const nameKey=x=>norm(x.name),codeKey=x=>norm(x.code).replace(/\s+/g,'');
+ const byName=new Map();
+ right.items.forEach((v,i)=>{const k=nameKey(v);if(!byName.has(k))byName.set(k,[]);byName.get(k).push({v,i})});
+ function emit(x,y,status,diff=null){
+  results.push({name:x?.name||y?.name||'',code:x?.code||y?.code||'',codeA:x?.code||'',codeB:y?.code||'',unitA:x?.unit||'',qtyA:x?.qty??null,unitB:y?.unit||'',qtyB:y?.qty??null,diff,status,lineA:x?.line||'',lineB:y?.line||'',rawA:x?.raw||'',rawB:y?.raw||'',review:'Потрібна перевірка за оригіналом кошторису та проєкту'});
+ }
+ for(const x of left.items){
+  const candidates=(byName.get(nameKey(x))||[]).filter(z=>!used.has(z.i));
+  if(!candidates.length){emit(x,null,'Відсутня у B');continue}
+  let match=null;
+  if(candidates.length===1){match=candidates[0]}
+  else{
+   // Duplicate descriptions are common in estimates. Pair only when code uniquely identifies a row.
+   const sameCode=codeKey(x)?candidates.filter(z=>codeKey(z.v)===codeKey(x)):[];
+   if(sameCode.length===1)match=sameCode[0];
+  }
+  if(!match){emit(x,null,'Неоднозначно: кілька збігів');continue}
+  const {v:y,i}=match;used.add(i);
+  const codeMismatch=!!(codeKey(x)&&codeKey(y)&&codeKey(x)!==codeKey(y));
+  let status='Збіг назви, обсяг не підтверджено',diff=null;
+  if(x.qty!==null&&y.qty!==null){
+   const cx=canonical(x.unit,x.qty),cy=canonical(y.unit,y.qty);
+   if(cx.u&&cx.u===cy.u){diff=Number((cx.q-cy.q).toFixed(6));status=Math.abs(diff)<1e-7?'Збіг назви, одиниці та кількості':'Розбіжність кількості'}
+   else status='Несумісні або невідомі одиниці';
+  }
+  if(codeMismatch)status='Розбіжність шифру'+(status==='Розбіжність кількості'?' та кількості':'');
+  emit(x,y,status,diff);
+ }
+ right.items.forEach((y,i)=>{if(!used.has(i))emit(null,y,'Додаткова позиція у B')});
+ for(const r of results){
+  r.type=classify({name:r.name,code:r.code});
+  r.codeCheck=r.codeA&&r.codeB?(norm(r.codeA).replace(/\s+/g,'')===norm(r.codeB).replace(/\s+/g,'')?'Шифри збігаються текстово':'Шифри різні'):'Один або обидва шифри відсутні';
+  if(r.status==='Збіг назви, одиниці та кількості')r.review='Текстовий збіг; технічна відповідність і комплектність не підтверджені';
+  if(r.status.startsWith('Неоднозначно'))r.review='Кілька однакових назв. Зіставте рядки вручну за шифром, розділом та характеристиками';
+ }
+ return {results,summary:{rowsA:left.items.length,rowsB:right.items.length,matched:results.filter(x=>x.status==='Збіг назви, одиниці та кількості').length,discrepancies:results.filter(x=>x.status!=='Збіг назви, одиниці та кількості').length},columnsA:left.columns,columnsB:right.columns};
 }
-return {results,summary:{rowsA:left.items.length,rowsB:right.items.length,matched:results.filter(x=>x.status==='Збіг назви, одиниці та кількості').length,discrepancies:results.filter(x=>x.status!=='Збіг назви, одиниці та кількості').length},columnsA:left.columns,columnsB:right.columns}}
 module.exports={compare,parse,number,unit,canonical,classify};

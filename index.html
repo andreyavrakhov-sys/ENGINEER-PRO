@@ -364,7 +364,42 @@ main{padding:17px 19px}
 @media(max-width:440px){
  #home .quick-access .action-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-</style></head><body><header><div><strong>⚡ ENGINEER PRO</strong> <span class="pill">v0.7.2</span></div><div class="header-tools"><input id="globalSearch" aria-label="Пошук у задачах, файлах і програмах" placeholder="⌕ Пошук… (Ctrl+K)" style="width:230px"><span id="clock"></span><button id="headerNewTask" title="Створити завдання">＋ Завдання</button><button id="headerApps" title="Мої програми">▦ Програми</button></div></header><div class="layout"><nav><button class="active" data-page="home">◈ Огляд</button><button data-page="ai">✦ AI HUB</button><button data-page="projects">▣ Проєкти й файли</button><button data-page="calc">∑ Електрокалькулятор</button><button data-page="tasks">☑ Завдання</button><button data-page="launchers">▦ Програми та папки</button><button data-page="norms">▤ Нормативні документи</button><button data-page="planner">▥ Календар робіт</button><button data-page="settings">⚙ Налаштування AI</button><div style="margin:30px 12px;color:#7d8794;font-size:12px">Локальна програма<br>Без телеметрії застосунку</div></nav><main><div id="searchResults" class="search-results" hidden></div>
+
+/* 0.7.3 workflow improvements */
+#home .dashboard-task{display:flex;align-items:center;gap:8px}
+#home .dashboard-task input[type=checkbox]{flex:0 0 auto;width:15px;height:15px;accent-color:#ffba36;cursor:pointer}
+#home .dashboard-task>span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#home .dashboard-task .secondary{flex:0 0 auto;max-width:43%;white-space:nowrap;font-size:10px}
+#home .dashboard-task .due-overdue{color:#ff8b83;font-weight:600}
+#home .dashboard-task .high-priority:before{content:'● ';color:#ffb43a}
+#home .today-empty{font-size:12px;line-height:1.5;color:#9fd9bc;padding:12px 0}
+#home .today-progress{color:#9eb4c9;font-size:11px;margin:8px 0 0}
+#home .notes-status{font-size:10px;color:#90c8ad;margin-top:5px;min-height:15px}
+#home .recent-files-card button,#home .recent-projects-card button{border-radius:6px}
+#home .recent-files-card button:hover,#home .recent-projects-card button:hover{background:#16354b!important;color:#ffcc63}
+#home .action-tile:focus-visible,#home .launcher-tile:focus-visible,#home .ai-tile:focus-visible{outline:2px solid #ffc348;outline-offset:2px}
+
+.project-entry{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.project-entry input{flex:2;min-width:200px}.project-entry select{flex:1;min-width:150px}
+.project-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.project-row strong{flex:2;min-width:170px;overflow:hidden;text-overflow:ellipsis}
+.project-row .muted{min-width:60px;font-size:12px}
+.project-row select{max-width:160px}
+#taskProject{min-width:145px;max-width:230px}
+#plannerProject{min-width:180px}
+.planner-metrics{font-size:12px;color:#a6c8d9;margin:8px 0 14px;line-height:1.6}
+@media(max-width:700px){.project-row strong{flex-basis:100%}.project-entry input{flex-basis:100%}}
+
+.compare-controls{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-top:10px}
+.compare-controls label{display:flex;flex-direction:column;gap:6px;min-width:210px}
+.compare-controls input{min-width:210px}
+.compare-table{width:100%;border-collapse:collapse;font-size:12px}
+.compare-table th{text-align:left;border-bottom:1px solid #6a7b8b;padding:8px;position:sticky;top:0;background:#132637;z-index:1}
+.compare-table td{padding:7px;border-bottom:1px solid #343c46;vertical-align:top}
+.compare-discrepancy{background:rgba(240,163,53,.065)}
+.compare-discrepancy:hover{background:rgba(240,163,53,.13)}
+.spec-card{margin-top:14px}.spec-result{overflow:auto;max-height:460px;margin-top:10px}.spec-result table{min-width:1200px}.spec-result td{max-width:350px;overflow-wrap:anywhere}
+.spec-ocr-option{display:flex;align-items:center;gap:8px;font-size:12px;color:#b7d5e6;padding:7px 4px}.spec-ocr-option input{accent-color:#ffbb43;width:17px;height:17px}</style></head><body><header><div><strong>⚡ ENGINEER PRO</strong> <span class="pill">v0.8.4</span></div><div class="header-tools"><input id="globalSearch" aria-label="Пошук у задачах, файлах і програмах" placeholder="⌕ Пошук… (Ctrl+K)" style="width:230px"><span id="clock"></span><button id="headerNewTask" title="Створити завдання">＋ Завдання</button><button id="headerApps" title="Мої програми">▦ Програми</button></div></header><div class="layout"><nav><button class="active" data-page="home">◈ Огляд</button><button data-page="ai">✦ AI HUB</button><button data-page="projects">▣ Проєкти й файли</button><button data-page="calc">∑ Електрокалькулятор</button><button data-page="tasks">☑ Завдання</button><button data-page="launchers">▦ Програми та папки</button><button data-page="norms">▤ Нормативні документи</button><button data-page="planner">▥ Календар робіт</button><button data-page="settings">⚙ Налаштування AI</button><div style="margin:30px 12px;color:#7d8794;font-size:12px">Локальна програма<br>Без телеметрії застосунку</div></nav><main><div id="searchResults" class="search-results" hidden></div>
 <section class="page active" id="home">
 <div class="home-workspace">
  <div class="home-primary">
@@ -396,24 +431,29 @@ main{padding:17px 19px}
   <div class="card compact-system"><div class="section-heading"><h2>Система</h2><button id="refresh">Оновити</button></div><div id="stats">Завантаження…</div><button id="openfolder">Відкрити папку</button></div>
  </div>
  <aside class="home-aside">
-  <div class="card today-card"><div class="section-heading"><h2>Сьогодні</h2><button class="primary" id="asideNewTask">＋ Нова задача</button></div><div id="homeUpcoming"></div><button class="aside-link" data-go="tasks">Усі задачі →</button></div>
+  <div class="card today-card"><div class="section-heading"><h2>Сьогодні</h2><button class="primary" id="asideNewTask">＋ Нова задача</button></div><div id="homeUpcoming"></div><p id="todayProgress" class="today-progress" aria-live="polite"></p><button class="aside-link" data-go="tasks">Усі задачі →</button></div>
   <div class="home-aside-split">
    <div class="card calendar-card"><h2>Календар робіт</h2><div class="calendar-top"><button id="calPrev" aria-label="Попередній місяць">‹</button><strong id="calTitle"></strong><button id="calNext" aria-label="Наступний місяць">›</button></div><div id="homeCalendar" class="calendar-grid"></div><button class="aside-link" data-go="planner">Діаграма Ганта →</button></div>
-   <div class="card notes-card"><div class="section-heading"><h2>Нотатки</h2><button class="primary" id="saveNotes">Зберегти</button></div><textarea id="notes" placeholder="Ваші нотатки зберігаються локально"></textarea></div>
+   <div class="card notes-card"><div class="section-heading"><h2>Нотатки</h2><button class="primary" id="saveNotes">Зберегти</button></div><textarea id="notes" placeholder="Ваші нотатки зберігаються локально"></textarea><div id="notesStatus" class="notes-status" aria-live="polite">Автозбереження увімкнено</div></div>
   </div>
   <div class="card ai-card"><div class="section-heading"><h2>AI HUB</h2><button data-go="ai">Відкрити →</button></div><p class="ai-hub-caption">Помічник для аналізу документів, кошторисів і технічних питань</p><div class="ai-tiles"><button data-go="ai" class="ai-tile teal">◎<small>AI помічник</small></button><button data-go="ai" class="ai-tile purple">✧<small>AI моделі</small></button><button data-go="ai" class="ai-tile amber">▤<small>Аналіз файлу</small></button></div></div>
  </aside>
 </div></section>
-<section class="page" id="ai"><h1>ENGINEER AI HUB <span class="pill">v0.7.2</span></h1><p class="muted">Хмарні моделі та локальна Ollama. Запити передаються обраному провайдеру.</p><div class="card"><div class="row"><div><label>Провайдер</label><select id="provider"><option value="auto">Автоматично — безкоштовні по черзі</option><option value="ollama">Ollama (локально)</option><option value="openrouter">OpenRouter (безкоштовні моделі)</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Claude (Anthropic)</option></select></div><div><label>Ідентифікатор моделі</label><input id="model" placeholder="наприклад, llama3.2"></div></div><label style="display:block;margin:8px 0"><input type="checkbox" id="allowPaidAuto" style="width:auto"> Дозволити платні API в автоматичному режимі (можливі витрати)</label><p class="muted">Безкоштовний режим: Gemini → OpenRouter Free → локальна Ollama. Потрібні власні ключі Gemini/OpenRouter із доступом до безкоштовних тарифів. Ліміти провайдерів діють. Перемикання не обходить ліміти чи обмеження сервісів.</p><label>Діалог</label><div class="chat" id="chat"><div class="muted">Налаштуйте модель і введіть запит. Доступ до локальних файлів не передається автоматично.</div></div><label>Повідомлення</label><textarea id="prompt" placeholder="Поставте запитання або попросіть виконати інженерний розрахунок"></textarea><div class="row"><button class="primary" id="ask">Надіслати</button><button id="clearChat">Очистити діалог</button></div><div id="aiStatus" class="status"></div></div></section>
-<section class="page" id="projects"><h1>Проєкти та файли</h1><p class="muted">Відкривайте документи у встановлених програмах. Попередній перегляд XLSX/CSV/PDF і звірка текстових позицій. Для точного кошторисного аналізу потрібна перевірка інженером.</p><div class="card"><button class="primary" id="pick">Додати файли до списку</button><input id="fileSearch" placeholder="⌕ Пошук за назвою файлу"><div id="files"></div></div><div class="card"><h2>Аналіз документів (попередній)</h2><p class="muted">Оберіть два документи зі списку вище. Дані читаються локально. Підтримка XLSX/CSV і часткового тексту PDF; скановані PDF потребують OCR.</p><div class="row"><div><label>Кошторис / таблиця A</label><select id="docA"></select></div><div><label>Проєкт / таблиця B</label><select id="docB"></select></div></div><div class="row"><button class="primary" id="readDocs">Прочитати та зіставити</button><button id="exportCompare">Експорт результату CSV</button><button id="importEstimate">Імпорт кошторису АВК-5 (Excel)</button></div><div id="estimateStatus" class="status"></div><div id="estimatePreview" style="overflow:auto;max-height:380px"></div><div id="docStatus" class="status"></div><div id="docResult" style="max-height:470px;overflow:auto;margin-top:12px"></div></div></section>
+<section class="page" id="ai"><h1>ENGINEER AI HUB <span class="pill">v0.8.4</span></h1><p class="muted">Хмарні моделі та локальна Ollama. Запити передаються обраному провайдеру.</p><div class="card"><div class="row"><div><label>Провайдер</label><select id="provider"><option value="auto">Автоматично — безкоштовні по черзі</option><option value="ollama">Ollama (локально)</option><option value="openrouter">OpenRouter (безкоштовні моделі)</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Claude (Anthropic)</option></select></div><div><label>Ідентифікатор моделі</label><input id="model" placeholder="наприклад, llama3.2"></div></div><label style="display:block;margin:8px 0"><input type="checkbox" id="allowPaidAuto" style="width:auto"> Дозволити платні API в автоматичному режимі (можливі витрати)</label><p class="muted">Безкоштовний режим: Gemini → OpenRouter Free → локальна Ollama. Потрібні власні ключі Gemini/OpenRouter із доступом до безкоштовних тарифів. Ліміти провайдерів діють. Перемикання не обходить ліміти чи обмеження сервісів.</p><label>Діалог</label><div class="chat" id="chat"><div class="muted">Налаштуйте модель і введіть запит. Доступ до локальних файлів не передається автоматично.</div></div><label>Повідомлення</label><textarea id="prompt" placeholder="Поставте запитання або попросіть виконати інженерний розрахунок"></textarea><div class="row"><button class="primary" id="ask">Надіслати</button><button id="clearChat">Очистити діалог</button></div><div id="aiStatus" class="status"></div></div></section>
+<section class="page" id="projects"><h1>Проєкти та файли</h1><p class="muted">Відкривайте документи у встановлених програмах. Попередній перегляд XLSX/CSV/PDF і звірка текстових позицій. Для точного кошторисного аналізу потрібна перевірка інженером.</p><div class="card project-manager">
+ <div class="section-heading"><h2>Менеджер інженерних проєктів</h2></div>
+ <div class="row project-entry"><input id="newProjectName" placeholder="Назва об’єкта / проєкту"><select id="newProjectStatus"><option value="active">У роботі</option><option value="planned">Заплановано</option><option value="completed">Завершено</option></select><button id="createProject" class="primary">＋ Створити проєкт</button></div>
+ <div id="workProjectList"></div>
+</div><div class="card"><button class="primary" id="pick">Додати файли до списку</button><input id="fileSearch" placeholder="⌕ Пошук за назвою файлу"><div id="files"></div></div><div class="card"><h2>Аналіз документів (попередній)</h2><p class="muted">Оберіть два документи зі списку вище. Дані читаються локально. Підтримка XLSX/CSV і часткового тексту PDF; скановані PDF потребують OCR.</p><div class="row"><div><label>Кошторис / таблиця A</label><select id="docA"></select></div><div><label>Проєкт / таблиця B</label><select id="docB"></select></div></div><div class="row"><button class="primary" id="readDocs">Прочитати та зіставити</button><button id="exportCompare">Експорт результату CSV</button><button id="importEstimate">Імпорт кошторису АВК-5 (Excel)</button><button id="exportEstimate" disabled>Експорт усіх позицій кошторису CSV</button></div><div class="card spec-card"><h2>Специфікація проєкту → перевірка кошторису</h2><p class="muted">Оберіть файл PDF / XLSX / CSV зі списку B, а кошторис XLSX зі списку A. PDF.js зчитує текстовий шар і кирилицю. Для сканів можна ввімкнути OCR українською та англійською (до 12 сторінок, мовні дані можуть потребувати інтернету). Жоден непідтверджений збіг не вважається доказом відсутності матеріалу.</p><div class="row"><label class="spec-ocr-option"><input type="checkbox" id="specEnableOCR"> OCR сканів (укр + англ., повільніше)</label><button id="readSpecification" class="primary">Зчитати специфікацію B</button><button id="compareSpecification" disabled>Звірити з імпортованим кошторисом A</button><button id="exportSpecification" disabled>Експорт відомості CSV</button></div><div id="specStatus" class="status" aria-live="polite"></div><div id="specResult" class="spec-result"></div></div><div id="estimateStatus" class="status"></div><div id="estimatePreview" style="overflow:auto;max-height:380px"></div><div class="row compare-controls"><label>Фільтр результатів <select id="compareFilter"><option value="all">Усі позиції</option><option value="review">Тільки потребують перевірки</option><option value="missing">Відсутні в B</option><option value="additional">Додаткові в B</option><option value="quantity">Розбіжності кількості</option><option value="code">Розбіжності шифрів</option><option value="ambiguous">Неоднозначні позиції</option><option value="match">Повні збіги за назвою, одиницею й кількістю</option></select></label><label>Пошук <input id="compareSearch" placeholder="Назва, шифр, статус"></label><span id="compareCount" class="muted"></span></div><div id="docStatus" class="status"></div><div id="docResult" style="max-height:470px;overflow:auto;margin-top:12px"></div></div></section>
 <section class="page" id="calc"><h1>Електротехнічний калькулятор</h1><p class="muted">Попередній розрахунок активної потужності або струму за заданими параметрами.</p><div class="card"><div class="grid"><div><label>Мережа</label><select id="phase"><option value="3">Трифазна</option><option value="1">Однофазна</option></select></div><div><label>Лінійна напруга (3ф) / напруга (1ф), В</label><input id="voltage" type="number" value="400" min="1"></div><div><label>Струм, А</label><input id="amps" type="number" value="100" min="0" step="any"></div><div><label>cos φ</label><input id="cos" type="number" value="0.9" min="0.01" max="1" step="any"></div><div><label>ККД η (для потужності на валу)</label><input id="eff" type="number" value="1" min="0.01" max="1" step="any"></div></div><p><button class="primary" id="calculate">Розрахувати</button></p><div id="result"></div></div><div class="card"><h2>Маса та довжина кабелю</h2><div class="row"><div><label>Загальна маса, кг</label><input id="mass" type="number" min="0" value="125"></div><div><label>Погонна маса, кг/м</label><input id="perMeter" type="number" min="0" value="2.5" step="any"></div></div><p><button id="cable" class="primary">Визначити довжину</button></p><div id="cableResult"></div></div></section>
-<section class="page" id="tasks"><h1>Мої завдання</h1><div class="card"><div class="task-entry"><input id="taskText" placeholder="Нове завдання"><input id="taskStart" type="date" title="Дата початку"><input id="taskDate" type="date" title="Дата завершення"><select id="taskPriority" title="Пріоритет"><option value="normal">Звичайний</option><option value="high">Високий</option><option value="low">Низький</option></select><button class="primary" id="addTask">Додати</button></div><div class="row task-controls"><input id="taskSearch" placeholder="Пошук завдань"><select id="taskFilter"><option value="all">Усі</option><option value="open">Активні</option><option value="done">Виконані</option><option value="overdue">Прострочені</option></select><select id="taskSort"><option value="due">За строком</option><option value="priority">За пріоритетом</option><option value="newest">Нові спочатку</option></select></div><div id="taskList"></div><div id="summary" class="muted"></div></div></section>
+<section class="page" id="tasks"><h1>Мої завдання</h1><div class="card"><div class="task-entry"><input id="taskText" placeholder="Нове завдання"><input id="taskStart" type="date" title="Дата початку"><input id="taskDate" type="date" title="Дата завершення"><select id="taskProject" title="Проєкт"><option value="">Без проєкту</option></select><select id="taskPriority" title="Пріоритет"><option value="normal">Звичайний</option><option value="high">Високий</option><option value="low">Низький</option></select><button class="primary" id="addTask">Додати</button></div><div class="row task-controls"><input id="taskSearch" placeholder="Пошук завдань"><select id="taskFilter"><option value="all">Усі</option><option value="open">Активні</option><option value="done">Виконані</option><option value="overdue">Прострочені</option></select><select id="taskSort"><option value="due">За строком</option><option value="priority">За пріоритетом</option><option value="newest">Нові спочатку</option></select></div><div id="taskList"></div><div id="summary" class="muted"></div></div></section>
 <section class="page" id="launchers"><h1>Програми та папки</h1><p class="muted">Додайте ярлики встановлених програм та робочих папок. Натискання відкриває їх у Windows. Нічого не встановлюється автоматично.</p><div class="card"><h2>Мої ярлики</h2><div class="row"><button id="addApp" class="primary">+ Додати програму (.exe)</button><button id="addFolder">+ Додати папку</button></div><div id="launchStatus" class="status"></div><input id="launcherSearch" placeholder="⌕ Знайти програму або папку"><div id="launchList" class="launcher-tiles"></div></div></section><section class="page" id="norms"><h1>Нормативні документи</h1><p class="muted">Ваші локальні PDF-збірники, ДБН, ДСТУ та інші документи. Відкриваються у встановленій програмі; автоматичної нормативної експертизи немає.</p><div class="card"><div class="row"><button class="primary" id="normAdd">＋ Додати PDF</button><button id="normFolder">Відкрити папку з нормативами</button></div><div id="normList"></div><div id="normStatus" class="status"></div></div></section>
-<section class="page" id="planner"><h1>Календар робіт</h1><p class="muted">Завдання з установленими строками. Це список строків, а не повний календарний графік з залежностями.</p><div class="card"><div class="row" style="justify-content:space-between"><div><h2>Діаграма Ганта</h2><p class="muted">Календарні дні, включно з вихідними. Залежності та ресурси не враховуються.</p></div><button id="exportGantt" class="primary">Експорт CSV для Excel</button></div><div id="ganttChart" class="gantt-scroll"></div></div><div class="card"><h2>Терміни завдань</h2><div id="plannerList"></div><button data-go="tasks">Перейти до задач</button></div></section>
+<section class="page" id="planner"><h1>Календар робіт</h1><p class="muted">Завдання з установленими строками. Це список строків, а не повний календарний графік з залежностями.</p><div class="card"><div class="row" style="justify-content:space-between"><div><h2>Діаграма Ганта</h2><p class="muted">Календарні дні, включно з вихідними. Залежності та ресурси не враховуються.</p></div><div class="row"><select id="plannerProject"><option value="">Усі проєкти</option></select><button id="exportGantt" class="primary">Експорт CSV для Excel</button></div></div><div id="plannerMetrics" class="planner-metrics"></div><div id="ganttChart" class="gantt-scroll"></div></div><div class="card"><h2>Терміни завдань</h2><div id="plannerList"></div><button data-go="tasks">Перейти до задач</button></div></section>
 <section class="page" id="settings"><h1>Налаштування AI</h1><div class="card"><p class="muted">Ключі шифруються засобами Electron safeStorage, якщо шифрування доступне. Для Ollama ключ не потрібен. Збереження ключів у цьому MVP локальне, без синхронізації.</p><label>Провайдер</label><select id="keyProvider"><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Anthropic</option><option value="openrouter">OpenRouter (free)</option></select><label>API-ключ</label><input type="password" id="key" autocomplete="off"><p><button id="saveKey" class="primary">Зберегти ключ</button></p><div class="row"><button id="openKeyPage">Отримати ключ на офіційному сайті ↗</button><button id="importKeys">Імпортувати ключі з файлу…</button><button id="testAI">Перевірити підключення</button></div><p class="muted">Імпорт: JSON з полями openai, gemini, anthropic, openrouter (або keys), чи TXT з рядками openai=ключ. Файл читається локально; ключі зберігаються зашифрованими. Отримання ключа потребує облікового запису провайдера.</p><div id="keyStatus" class="status"></div></div></section>
 </main></div><script>
-const $=id=>document.getElementById(id);let state={tasks:[],notes:'',projects:[]};const fmt=n=>new Intl.NumberFormat('uk-UA',{maximumFractionDigits:3}).format(n);function status(s){$('aiStatus').textContent=s}function go(p){document.querySelectorAll('.page').forEach(e=>e.classList.toggle('active',e.id===p));document.querySelectorAll('nav button').forEach(e=>e.classList.toggle('active',e.dataset.page===p))}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));function clock(){ $('clock').textContent=new Date().toLocaleString('uk-UA',{weekday:'short',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'})}setInterval(clock,1000);clock();async function persist(){await window.engineer.save(state)}function renderTasks(){
- const el=$('taskList');el.replaceChildren();const today=new Date().toISOString().slice(0,10);
+const $=id=>document.getElementById(id);let state={tasks:[],notes:'',projects:[],workProjects:[]};const fmt=n=>new Intl.NumberFormat('uk-UA',{maximumFractionDigits:3}).format(n);function status(s){$('aiStatus').textContent=s}function go(p){document.querySelectorAll('.page').forEach(e=>e.classList.toggle('active',e.id===p));document.querySelectorAll('nav button').forEach(e=>e.classList.toggle('active',e.dataset.page===p))}document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));function clock(){ $('clock').textContent=new Date().toLocaleString('uk-UA',{weekday:'short',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'})}setInterval(clock,1000);clock();async function persist(){await window.engineer.save(state)}function localToday(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function renderTasks(){
+ const el=$('taskList');el.replaceChildren();const today=localToday();
  const q=($('taskSearch')?.value||'').toLocaleLowerCase('uk');
  const filter=$('taskFilter')?.value||'all',sort=$('taskSort')?.value||'due';
  const list=state.tasks.map((t,i)=>({t,i})).filter(({t})=>{
@@ -426,16 +466,28 @@ const $=id=>document.getElementById(id);let state={tasks:[],notes:'',projects:[]
  list.sort((a,b)=>sort==='newest'?b.i-a.i:sort==='priority'?({high:0,normal:1,low:2}[a.t.priority||'normal']-({high:0,normal:1,low:2}[b.t.priority||'normal'])):(a.t.due||'9999').localeCompare(b.t.due||'9999'));
  for(const {t,i} of list){const r=document.createElement('div');r.className='item'+(!t.done&&t.due&&t.due<today?' task-overdue':t.priority==='high'?' task-high':'');
  const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!t.done;cb.style.width='auto';cb.onchange=async()=>{t.done=cb.checked;await persist();renderTasks();renderDashboard()};
- const label=document.createElement('span');label.style.flex='1';label.textContent=t.text+(t.due?' · '+t.due:'')+(t.priority==='high'?' · Високий пріоритет':'');if(t.done)label.style.textDecoration='line-through';
+ const label=document.createElement('span');label.style.flex='1';label.textContent=t.text+(t.projectId&&state.workProjects?.some(p=>p.id===t.projectId)?' · ['+state.workProjects.find(p=>p.id===t.projectId).name+']':'')+(t.due?' · '+t.due:'')+(t.priority==='high'?' · Високий пріоритет':'');if(t.done)label.style.textDecoration='line-through';
  const edit=document.createElement('button');edit.textContent='Змінити';edit.onclick=async()=>{const v=prompt('Назва завдання',t.text);if(v===null||!v.trim())return;const start=prompt('Початок YYYY-MM-DD (порожньо = без дати)',t.start||'');if(start===null)return;const due=prompt('Завершення YYYY-MM-DD (порожньо = без дати)',t.due||'');if(due===null)return;const valid=x=>!x||(/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(Date.parse(x)));if(!valid(start)||!valid(due)||(start&&due&&start>due)){alert('Перевірте дати: YYYY-MM-DD, початок не пізніше завершення');return}t.text=v.trim();t.start=start;t.due=due;await persist();renderTasks();renderDashboard()};
  const del=document.createElement('button');del.textContent='Видалити';del.onclick=async()=>{if(!confirm('Видалити завдання?'))return;state.tasks.splice(i,1);await persist();renderTasks();renderDashboard()};
  r.append(cb,label,edit,del);el.append(r)}
  if(!list.length){const empty=document.createElement('p');empty.className='muted';empty.textContent='Немає завдань за вибраними умовами';el.append(empty)}
  $('summary').textContent=`Активні: ${state.tasks.filter(t=>!t.done).length} / Усього: ${state.tasks.length}`;
 }
-function renderFiles(){const el=$('files');el.replaceChildren();state.projects.forEach((f,i)=>{if(($('fileSearch')?.value||'')&&!f.name.toLocaleLowerCase('uk').includes($('fileSearch').value.toLocaleLowerCase('uk')))return;const r=document.createElement('div');r.className='item';const s=document.createElement('span');s.textContent=f.name;const b=document.createElement('button');b.textContent='Відкрити';b.onclick=async()=>{try{const err=await window.engineer.open(f.path);if(err)alert(err)}catch(e){alert(e.message)}};const d=document.createElement('button');d.textContent='×';d.onclick=async()=>{state.projects.splice(i,1);await persist();renderFiles();renderDashboard()};r.append(s,b,d);el.append(r)});updateDocSelects()}
+function renderFiles(){const el=$('files');el.replaceChildren();state.projects.forEach((f,i)=>{if(($('fileSearch')?.value||'')&&!f.name.toLocaleLowerCase('uk').includes($('fileSearch').value.toLocaleLowerCase('uk')))return;const r=document.createElement('div');r.className='item';const s=document.createElement('span');s.textContent=f.name;s.title=f.path;s.style.cssText='min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1';const b=document.createElement('button');b.textContent='Відкрити';b.onclick=async()=>{try{const err=await window.engineer.open(f.path);if(err)alert(err)}catch(e){alert(e.message)}};const d=document.createElement('button');d.textContent='×';d.onclick=async()=>{state.projects.splice(i,1);await persist();renderFiles();renderDashboard()};r.append(s,b,d);el.append(r)});if(!el.childNodes.length){const empty=document.createElement('p');empty.className='muted';empty.textContent=state.projects.length?'За пошуком файлів не знайдено':'Файлів ще немає. Натисни «Додати файли».';el.append(empty)}updateDocSelects()}
 function updateDocSelects(){for(const id of ['docA','docB']){const el=$(id),prev=el.value;el.replaceChildren();state.projects.forEach((f,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=f.name;el.append(o)});if([...el.options].some(o=>o.value===prev))el.value=prev}if(state.projects.length>1&&!$('docB').value)$('docB').value='1'}
-$('addTask').onclick=async()=>{const t=$('taskText').value.trim();if(!t)return;if($('taskStart').value&&$('taskDate').value&&$('taskStart').value>$('taskDate').value){alert('Дата початку не може бути пізніше завершення');return}state.tasks.push({text:t,done:false,start:$('taskStart').value||'',due:$('taskDate').value||'',priority:$('taskPriority').value});$('taskText').value='';$('taskStart').value='';$('taskDate').value='';await persist();renderTasks();renderDashboard()};$('saveNotes').onclick=async()=>{state.notes=$('notes').value;await persist();alert('Збережено')};$('pick').onclick=async()=>{try{const fs=await window.engineer.pick();state.projects.push(...fs.filter(f=>!state.projects.some(x=>x.path===f.path)));await persist();renderFiles();renderDashboard()}catch(e){alert(e.message)}};$('openfolder').onclick=()=>window.engineer.folder();async function refresh(){try{const s=await window.engineer.stats();$('stats').replaceChildren();[['Комп’ютер',s.hostname],['Процесор',s.cpu],['Логічні процесори',s.cores],['ОЗП використано',fmt((s.total-s.free)/1073741824)+' / '+fmt(s.total/1073741824)+' ГБ'],['Час роботи',fmt(s.uptime/3600)+' год']].forEach(([k,v])=>{const d=document.createElement('div');d.className='item';d.textContent=k+': '+v;$('stats').append(d)})}catch(e){$('stats').textContent=e.message}}$('refresh').onclick=refresh;
+$('addTask').onclick=async()=>{const t=$('taskText').value.trim();if(!t)return;if($('taskStart').value&&$('taskDate').value&&$('taskStart').value>$('taskDate').value){alert('Дата початку не може бути пізніше завершення');return}state.tasks.push({text:t,done:false,start:$('taskStart').value||'',due:$('taskDate').value||'',priority:$('taskPriority').value,projectId:$('taskProject').value||''});$('taskText').value='';$('taskStart').value='';$('taskDate').value='';await persist();renderTasks();renderDashboard()};let notesTimer=null,notesSaving=false;
+async function saveNotes(silent=true){
+ clearTimeout(notesTimer);const current=$('notes').value;
+ if(current===state.notes){$('notesStatus').textContent='Усі зміни збережено';return}
+ notesSaving=true;$('notesStatus').textContent='Збереження…';
+ state.notes=current;
+ try{await persist();$('notesStatus').textContent='Збережено локально · '+new Date().toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'})}
+ catch(e){$('notesStatus').textContent='Помилка збереження: '+e.message}
+ finally{notesSaving=false;if($('notes').value!==current)notesTimer=setTimeout(()=>saveNotes(true),650)}
+}
+$('notes').addEventListener('input',()=>{$('notesStatus').textContent='Є незбережені зміни';clearTimeout(notesTimer);notesTimer=setTimeout(()=>saveNotes(true),650)});
+$('saveNotes').onclick=()=>saveNotes(false);
+$('pick').onclick=async()=>{try{const fs=await window.engineer.pick();state.projects.push(...fs.filter(f=>!state.projects.some(x=>x.path===f.path)));await persist();renderFiles();renderDashboard()}catch(e){alert(e.message)}};$('openfolder').onclick=()=>window.engineer.folder();async function refresh(){try{const s=await window.engineer.stats();$('stats').replaceChildren();[['Комп’ютер',s.hostname],['Процесор',s.cpu],['Логічні процесори',s.cores],['ОЗП використано',fmt((s.total-s.free)/1073741824)+' / '+fmt(s.total/1073741824)+' ГБ'],['Час роботи',fmt(s.uptime/3600)+' год']].forEach(([k,v])=>{const d=document.createElement('div');d.className='item';d.textContent=k+': '+v;$('stats').append(d)})}catch(e){$('stats').textContent=e.message}}$('refresh').onclick=refresh;
 $('calculate').onclick=()=>{const p=Number($('phase').value),u=Number($('voltage').value),i=Number($('amps').value),c=Number($('cos').value),eta=Number($('eff').value);if(!(u>0&&i>=0&&c>0&&c<=1&&eta>0&&eta<=1)){$('result').textContent='Перевірте значення';return}const apparent=(p===3?Math.sqrt(3):1)*u*i/1000;const active=apparent*c;$('result').textContent=`S = ${fmt(apparent)} кВА; P (електрична) = ${fmt(active)} кВт; P (механічна при заданому ККД) = ${fmt(active*eta)} кВт. Формула: ${p===3?'√3 × Uл × I × cos φ':'U × I × cos φ'}. Для несиметричних мереж спрощення не застосовувати.`};$('cable').onclick=()=>{const m=Number($('mass').value),q=Number($('perMeter').value);$('cableResult').textContent=m>=0&&q>0?`L = ${fmt(m)} кг / ${fmt(q)} кг/м = ${fmt(m/q)} м`:'Погонна маса має бути більшою за нуль'};
 const defaults={auto:'автовибір',openrouter:'openrouter/free',ollama:'llama3.2',openai:'gpt-4o-mini',gemini:'gemini-2.5-flash',anthropic:'claude-3-5-haiku-latest'};$('provider').onchange=()=>{$('model').value=defaults[$('provider').value]};$('provider').onchange();function bubble(who,msg){const d=document.createElement('div');d.className='bubble '+who;d.textContent=(who==='user'?'Ви: ':'AI: ')+msg;$('chat').append(d);$('chat').scrollTop=$('chat').scrollHeight}
 function friendlyAIError(e){const m=String(e?.message||e);if(/credits remaining|credit balance is too low|insufficient_quota|billing|exceeded your current quota/i.test(m))return 'Недостатньо API-кредитів або вичерпана квота. Перевірте оплату й ліміти у кабінеті провайдера.';if(/api.key|invalid.*key|authentication|unauthorized|401/i.test(m))return 'API-ключ недійсний або відсутній. Перевірте ключ у налаштуваннях AI.';if(/404|not found|model.*not/i.test(m))return 'Модель недоступна. Перевірте ідентифікатор моделі.';if(/fetch failed|ECONNREFUSED|abort/i.test(m))return 'Не вдалося підключитися до сервера. Перевірте інтернет або запуск Ollama.';return m}
@@ -445,13 +497,13 @@ $('testAI').onclick=async()=>{const provider=$('keyProvider').value;const model=
 $('openKeyPage').onclick=async()=>{try{await window.engineer.openKeyPage($('keyProvider').value);$('keyStatus').textContent='Відкрито офіційну сторінку провайдера у браузері'}catch(e){$('keyStatus').textContent='Помилка: '+e.message}};
 $('importKeys').onclick=async()=>{try{const result=await window.engineer.importKeys();$('keyStatus').textContent=result.canceled?'Імпорт скасовано':'Імпортовано ключі: '+result.imported.join(', ')}catch(e){$('keyStatus').textContent='Помилка імпорту: '+e.message}};
 
-let compareRows=[];
+let compareRows=[];let importedEstimate=null;
 const norm=s=>String(s??'').trim().toLocaleLowerCase('uk-UA').replace(/\s+/g,' ').replace(/[«»“”]/g,'"');
 function tabular(d){if(d.rows)return d.rows;return (d.text||'').split(/\r?\n/).filter(Boolean).map(x=>[x])}
 function asNumber(s){const n=Number(String(s??'').replace(/\s/g,'').replace(',','.'));return Number.isFinite(n)&&String(s).trim()?n:null}
 function pickText(row){return row.map(String).find(x=>x.trim().length>5&&!/^[-+]?\d[\d., ]*$/.test(x))||row[0]||''}
 
-$('importEstimate').onclick=async()=>{const selected=state.projects[Number($('docA').value)];if(!selected){$('estimateStatus').textContent='Оберіть Excel у списку A';return}const btn=$('importEstimate');btn.disabled=true;$('estimateStatus').textContent='Читаємо аркуші кошторису…';try{const result=await window.engineer.importEstimate(selected.path);const preview=$('estimatePreview');preview.replaceChildren();const summary=document.createElement('p');summary.textContent=`${result.sheetCount} аркушів; ${result.counts.total} позицій; роботи: ${result.counts.works}; ресурси/перевезення: ${result.counts.resources}; невизначено: ${result.counts.unknown}.`;preview.append(summary);const table=document.createElement('table');table.style.cssText='font-size:12px;border-collapse:collapse;width:100%';const keys=['sheet','estimate','section','line','number','code','name','unit','qty','coefficients','kind'];const header=document.createElement('tr');for(const key of keys){const th=document.createElement('th');th.textContent=key;th.style.padding='5px';header.append(th)}table.append(header);for(const item of result.items.slice(0,300)){const tr=document.createElement('tr');for(const key of keys){const td=document.createElement('td');td.textContent=Array.isArray(item[key])?item[key].join('; '):String(item[key]??'');td.style.cssText='padding:5px;border-bottom:1px solid #39404a';tr.append(td)}table.append(tr)}preview.append(table);$('estimateStatus').textContent='Імпорт завершено. Класифікація попередня, звіряйте з нормативами та проєктом.';window.lastEstimateImport=result;}catch(e){$('estimateStatus').textContent='Помилка: '+e.message}finally{btn.disabled=false}};
+$('importEstimate').onclick=async()=>{importedEstimate=null;$('exportEstimate').disabled=true;const selected=state.projects[Number($('docA').value)];if(!selected){$('estimateStatus').textContent='Оберіть Excel у списку A';return}const btn=$('importEstimate');btn.disabled=true;$('estimateStatus').textContent='Читаємо аркуші кошторису…';try{const result=await window.engineer.importEstimate(selected.path);const preview=$('estimatePreview');preview.replaceChildren();const summary=document.createElement('p');summary.textContent=`${result.sheetCount} аркушів; ${result.counts.total} позицій; роботи: ${result.counts.works}; ресурси/перевезення: ${result.counts.resources}; невизначено: ${result.counts.unknown}.`;preview.append(summary);const table=document.createElement('table');table.style.cssText='font-size:12px;border-collapse:collapse;width:100%';const keys=['sheet','estimate','section','line','number','code','name','unit','qty','coefficients','kind'];const header=document.createElement('tr');for(const key of keys){const th=document.createElement('th');th.textContent=key;th.style.padding='5px';header.append(th)}table.append(header);for(const item of result.items.slice(0,300)){const tr=document.createElement('tr');for(const key of keys){const td=document.createElement('td');td.textContent=Array.isArray(item[key])?item[key].join('; '):String(item[key]??'');td.style.cssText='padding:5px;border-bottom:1px solid #39404a';tr.append(td)}table.append(tr)}preview.append(table);$('estimateStatus').textContent='Імпорт завершено. Класифікація попередня, звіряйте з нормативами та проєктом.';window.lastEstimateImport=result;importedEstimate=result;$('exportEstimate').disabled=!result.items.length;}catch(e){$('estimateStatus').textContent='Помилка: '+e.message}finally{btn.disabled=false}};
 
 // User-configured launchers are persisted separately from existing application data.
 let launchers=[];
@@ -459,15 +511,93 @@ async function refreshLaunchers(){launchers=await window.engineer.getLaunchers()
 $('addApp').onclick=async()=>{try{await window.engineer.addLauncher('app');await refreshLaunchers()}catch(e){$('launchStatus').textContent=e.message}};
 $('addFolder').onclick=async()=>{try{await window.engineer.addLauncher('folder');await refreshLaunchers()}catch(e){$('launchStatus').textContent=e.message}};
 refreshLaunchers().catch(e=>$('launchStatus').textContent=e.message);
-$('readDocs').onclick=async()=>{const a=state.projects[Number($('docA').value)],b=state.projects[Number($('docB').value)];if(!a||!b){$('docStatus').textContent='Спочатку додайте два файли';return}if(a.path===b.path){$('docStatus').textContent='Оберіть різні файли';return}const out=$('docResult');out.replaceChildren();$('readDocs').disabled=true;$('docStatus').textContent='Читаємо та порівнюємо документи…';try{const [x,y]=await Promise.all([window.engineer.readDocument(a.path),window.engineer.readDocument(b.path)]);const ar=tabular(x),br=tabular(y);const report=await window.engineer.compareDocuments(ar,br);compareRows=report.results;const p=document.createElement('p');p.textContent=`A: ${report.summary.rowsA} позицій; B: ${report.summary.rowsB} позицій; підтверджених збігів: ${report.summary.matched}; потребують перевірки: ${report.summary.discrepancies}.`;out.append(p);const table=document.createElement('table');table.style.cssText='width:100%;border-collapse:collapse;font-size:13px';const columns=[['name','Найменування'],['code','Шифр'],['type','Тип позиції'],['codeCheck','Шифр норми'],['qtyA','Кількість A'],['unitA','Од. A'],['qtyB','Кількість B'],['unitB','Од. B'],['diff','Різниця (базова од.)'],['status','Результат'],['lineA','Рядок A'],['lineB','Рядок B']];const head=document.createElement('tr');for(const [,label] of columns){const th=document.createElement('th');th.textContent=label;th.style.cssText='text-align:left;border-bottom:1px solid #777;padding:7px';head.append(th)}table.append(head);for(const row of compareRows.slice(0,500)){const tr=document.createElement('tr');for(const [key] of columns){const td=document.createElement('td');td.textContent=row[key]??'—';td.style.cssText='padding:7px;border-bottom:1px solid #343c46;vertical-align:top';tr.append(td)}table.append(tr)}out.append(table);$('docStatus').textContent=`${x.notice||''} ${y.notice||''} Автоматичне зіставлення за нормалізованою назвою. Перевірте шифри, характеристики, комплектність і всі неоднозначні позиції вручну.`}catch(e){$('docStatus').textContent='Помилка читання або порівняння: '+e.message}finally{$('readDocs').disabled=false}};
-$('exportCompare').onclick=()=>{if(!compareRows.length){$('docStatus').textContent='Спочатку виконайте зіставлення';return}const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const keys=['name','code','type','codeCheck','review','qtyA','unitA','qtyB','unitB','diff','status','lineA','lineB','rawA','rawB'];const headers=['Найменування','Шифр','Тип позиції','Перевірка шифру','Примітка','Кількість A','Од. A','Кількість B','Од. B','Різниця','Статус','Рядок A','Рядок B','Джерело A','Джерело B'];const content='\\uFEFF'+[headers,...compareRows.map(r=>keys.map(k=>r[k]??''))].map(row=>row.map(esc).join(';')).join('\\r\\n');const blob=new Blob([content],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ENGINEER_PRO_звірка_0.3.1.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$('readDocs').onclick=async()=>{const a=state.projects[Number($('docA').value)],b=state.projects[Number($('docB').value)];if(!a||!b){$('docStatus').textContent='Спочатку додайте два файли';return}if(a.path===b.path){$('docStatus').textContent='Оберіть різні файли';return}const out=$('docResult');out.replaceChildren();$('readDocs').disabled=true;$('docStatus').textContent='Читаємо та порівнюємо документи…';try{const [x,y]=await Promise.all([window.engineer.readDocument(a.path),window.engineer.readDocument(b.path)]);const ar=tabular(x),br=tabular(y);const report=await window.engineer.compareDocuments(ar,br);compareRows=report.results;const p=document.createElement('p');p.textContent=`A: ${report.summary.rowsA} позицій; B: ${report.summary.rowsB} позицій; текстових збігів: ${report.summary.matched}; потребують перевірки: ${report.summary.discrepancies}.`;out.append(p);renderComparison();$('docStatus').textContent=`${x.notice||''} ${y.notice||''} Автоматичне зіставлення за назвою та унікальним шифром для повторюваних назв. Неоднозначні позиції не зіставляються примусово. Перевірте шифри, характеристики, комплектність та вихідні рядки вручну.`}catch(e){$('docStatus').textContent='Помилка читання або порівняння: '+e.message}finally{$('readDocs').disabled=false}};
 
-
-
-for(const id of ['taskSearch','taskFilter','taskSort'])$(id).addEventListener(id==='taskSearch'?'input':'change',renderTasks);
+function exportCSV(filename,headers,rows){
+ const esc=v=>'"'+String(v??'').replace(/"/g,'""').replace(/^[=+@\-\t\r]/,m=>"'"+m)+'"';
+ const csv='\uFEFF'+[headers,...rows].map(row=>row.map(esc).join(';')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)
+}
+function filteredComparison(){
+ const filter=$('compareFilter').value,q=$('compareSearch').value.trim().toLocaleLowerCase('uk');
+ return compareRows.filter(r=>{
+  const status=r.status||'';
+  if(filter==='review'&&status==='Збіг назви, одиниці та кількості')return false;
+  if(filter==='missing'&&status!=='Відсутня у B')return false;
+  if(filter==='additional'&&status!=='Додаткова позиція у B')return false;
+  if(filter==='quantity'&&!status.includes('Розбіжність кількості')&&!status.includes('та кількості'))return false;
+  if(filter==='code'&&!status.startsWith('Розбіжність шифру'))return false;
+  if(filter==='ambiguous'&&!status.startsWith('Неоднозначно'))return false;
+  if(filter==='match'&&status!=='Збіг назви, одиниці та кількості')return false;
+  return !q||[r.name,r.code,r.status,r.rawA,r.rawB].some(v=>String(v??'').toLocaleLowerCase('uk').includes(q))
+ })
+}
+function renderComparison(){
+ const out=$('docResult');out.replaceChildren();const rows=filteredComparison();
+ $('compareCount').textContent=`Показано ${rows.length} із ${compareRows.length} позицій`;
+ if(!compareRows.length){out.textContent='Спочатку виконайте порівняння двох документів.';return}
+ if(!rows.length){out.textContent='За вибраними умовами розбіжностей не знайдено.';return}
+ const columns=[['name','Найменування'],['codeA','Шифр A'],['codeB','Шифр B'],['type','Тип позиції'],['codeCheck','Шифр норми'],['qtyA','Кількість A'],['unitA','Од. A'],['qtyB','Кількість B'],['unitB','Од. B'],['diff','Різниця'],['status','Результат'],['lineA','Рядок A'],['lineB','Рядок B']];
+ const table=document.createElement('table');table.className='compare-table';
+ const head=document.createElement('tr');for(const [,label] of columns){const th=document.createElement('th');th.textContent=label;head.append(th)}table.append(head);
+ for(const row of rows.slice(0,500)){
+  const tr=document.createElement('tr');if(row.status!=='Збіг назви, одиниці та кількості')tr.className='compare-discrepancy';
+  for(const [key] of columns){const td=document.createElement('td');td.textContent=row[key]??'—';tr.append(td)}table.append(tr)
+ }out.append(table);
+ if(rows.length>500){const hint=document.createElement('p');hint.className='muted';hint.textContent='На екрані перші 500 позицій. CSV містить усі відфільтровані рядки.';out.append(hint)}
+}
+$('compareFilter').addEventListener('change',renderComparison);
+$('compareSearch').addEventListener('input',renderComparison);
+let activeSpec=null,specRows=[];
+$('readSpecification').onclick=async()=>{
+ const selected=state.projects[Number($('docB').value)];if(!selected){$('specStatus').textContent='Оберіть специфікацію у списку B';return}
+ const button=$('readSpecification');button.disabled=true;$('specStatus').textContent=$('specEnableOCR').checked?'Читання PDF / OCR… Це може тривати кілька хвилин.':'Читання специфікації PDF.js…';
+ try{activeSpec=await window.engineer.analyzeSpecification(selected.path,$('specEnableOCR').checked);specRows=[];$('compareSpecification').disabled=!activeSpec.items.length;$('exportSpecification').disabled=true;
+  $('specStatus').textContent=`${activeSpec.file}: знайдено ${activeSpec.totalFound} кандидатів; ${activeSpec.pages===null?'табличний файл':'сторінок PDF: '+activeSpec.pages}. ${activeSpec.warnings.slice(0,4).join(' ')}`;
+  renderSpecRows(activeSpec.items.map(x=>({name:x.name,unitSpec:x.unit,qtySpec:x.qty,page:x.page??'',line:x.line??'',sheet:x.sheet||'',source:x.source,status:'Кандидат, не звірено'})));
+ }catch(e){activeSpec=null;$('compareSpecification').disabled=true;$('specStatus').textContent='Помилка: '+e.message}finally{button.disabled=false}
+};
+$('compareSpecification').onclick=async()=>{
+ if(!activeSpec){$('specStatus').textContent='Спочатку зчитайте специфікацію';return}
+ if(!importedEstimate?.items?.length){$('specStatus').textContent='Спочатку імпортуйте кошторис Excel із поля A кнопкою «Імпорт кошторису АВК-5»';return}
+ const button=$('compareSpecification');button.disabled=true;
+ try{const report=await window.engineer.compareSpecification(activeSpec,importedEstimate);specRows=report.rows;
+  $('specStatus').textContent=`Позицій: ${report.summary.spec}; точних текстових збігів: ${report.summary.matched}; на перевірку: ${report.summary.review}. Неоднозначні та відсутні текстові збіги потребують ручного підтвердження.`;
+  $('exportSpecification').disabled=!specRows.length;renderSpecRows(specRows);
+ }catch(e){$('specStatus').textContent='Помилка звірки: '+e.message}finally{button.disabled=false}
+};
+function renderSpecRows(rows){const root=$('specResult');root.replaceChildren();if(!rows.length){root.textContent='Не знайдено повних рядків для перевірки. Спробуйте табличний XLSX/CSV або PDF з текстовим шаром.';return}
+ const keys=[['sourceMethod','Метод читання'],['name','Найменування'],['qtySpec','За проєктом'],['unitSpec','Од. проєкту'],['qtyEstimate','За кошторисом'],['unitEstimate','Од. кошторису'],['diff','Різниця (після перерахунку одиниць)'],['status','Статус'],['page','Стор. PDF'],['sheet','Аркуш'],['line','Рядок специфікації'],['estimateLine','Рядок кошторису'],['estimateCode','Шифр'],['source','Вихідний текст']];
+ const table=document.createElement('table');table.className='compare-table';const head=document.createElement('tr');for(const [,label] of keys){const th=document.createElement('th');th.textContent=label;head.append(th)}table.append(head);
+ for(const row of rows.slice(0,350)){const tr=document.createElement('tr');if(row.status!=='Текстовий збіг')tr.className='compare-discrepancy';for(const [key] of keys){const td=document.createElement('td');td.textContent=row[key]??'';tr.append(td)}table.append(tr)}root.append(table);
+ if(rows.length>350){const p=document.createElement('p');p.className='muted';p.textContent='На екрані перші 350 рядків; CSV містить усі.';root.append(p)}
+}
+$('exportSpecification').onclick=()=>{if(!specRows.length)return;
+ const keys=['sourceMethod','name','qtySpec','unitSpec','qtyEstimate','unitEstimate','diff','status','page','sheet','line','estimateLine','estimateCode','source','review'];
+ const headers=['Метод читання','Найменування','За проєктом','Од. проєкту','За кошторисом','Од. кошторису','Різниця (перерахована)','Статус','Сторінка PDF','Аркуш','Рядок специфікації','Рядок кошторису','Шифр','Вихідний текст','Примітка'];
+ exportCSV('ENGINEER_PRO_специфікація_розбіжності_0.8.3.csv',headers,specRows.map(r=>keys.map(k=>r[k]??'')));
+};
+$('exportEstimate').onclick=()=>{
+ if(!importedEstimate?.items?.length)return;
+ const keys=['sheet','estimate','section','line','number','code','basis','name','unit','qty','unitPrice','total','coefficients','kind'];
+ exportCSV('ENGINEER_PRO_позиції_кошторису_0.8.2.csv',keys,importedEstimate.items.map(item=>keys.map(k=>Array.isArray(item[k])?item[k].join(' | '):item[k]??'')));
+};
+$('exportCompare').onclick=()=>{
+ if(!compareRows.length){$('docStatus').textContent='Спочатку виконайте зіставлення';return}
+ const keys=['name','codeA','codeB','type','codeCheck','review','qtyA','unitA','qtyB','unitB','diff','status','lineA','lineB','rawA','rawB'];
+ const headers=['Метод читання','Найменування','Шифр A','Шифр B','Тип позиції','Перевірка шифру','Примітка','Кількість A','Од. A','Кількість B','Од. B','Різниця','Статус','Рядок A','Рядок B','Джерело A','Джерело B'];
+ exportCSV('ENGINEER_PRO_відомість_розбіжностей_0.8.2.csv',headers,filteredComparison().map(r=>keys.map(k=>r[k]??'')));
+};for(const id of ['taskSearch','taskFilter','taskSort'])$(id).addEventListener(id==='taskSearch'?'input':'change',renderTasks);
 $('fileSearch').addEventListener('input',renderFiles);
 $('launcherSearch').addEventListener('input',refreshLaunchers);
 const search=$('globalSearch'),results=$('searchResults');
+// Ctrl+N creates a task; Ctrl+1..8 navigates main tools; avoid intercepting typing.
+document.addEventListener('keydown',e=>{
+ if(!(e.ctrlKey||e.metaKey)||e.altKey)return;
+ if(e.key.toLowerCase()==='n'){e.preventDefault();go('tasks');$('taskText').focus();return}
+ if(/^[1-8]$/.test(e.key)){e.preventDefault();const pages=['home','ai','projects','calc','tasks','launchers','norms','planner'];go(pages[Number(e.key)-1])}
+});
+
 function runGlobalSearch(){
  const q=search.value.trim().toLocaleLowerCase('uk');results.replaceChildren();results.hidden=!q;if(!q)return;
  const hits=[];
@@ -519,15 +649,27 @@ function renderDashboard(){
  for(const x of launchers.slice(0,8)){const b=document.createElement('button');b.className='launcher-tile';b.style.cursor='pointer';const ico=document.createElement('span');ico.className='launch-icon';ico.textContent=x.kind==='app'?'▣':'▤';const name=document.createElement('span');name.className='launch-name';name.textContent=x.name;b.append(ico,name);b.onclick=()=>window.engineer.launch(x.id).catch(e=>alert(e.message));quick.append(b)}
  if(!launchers.length){const b=document.createElement('button');b.textContent='＋ Додати першу програму або папку';b.onclick=()=>go('launchers');quick.append(b)}
  const upcoming=$('homeUpcoming');upcoming.replaceChildren();
- const open=tasks.filter(t=>!t.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')).slice(0,6);
- if(!open.length)upcoming.textContent='Немає відкритих задач';
- for(const t of open){const d=document.createElement('div');d.className='dash-line';const title=document.createElement('span');title.textContent=t.text;const due=document.createElement('span');due.className='secondary';due.textContent=t.due||'Без строку';d.append(title,due);upcoming.append(d)}
+ const today=localToday(),open=tasks.filter(t=>!t.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')).slice(0,5);
+ if(!open.length){const empty=document.createElement('div');empty.className='today-empty';empty.textContent='✓ Усі задачі виконано. Можна запланувати наступні роботи.';upcoming.append(empty)}
+ for(const t of open){
+  const d=document.createElement('div');d.className='dash-line dashboard-task';
+  const cb=document.createElement('input');cb.type='checkbox';cb.title='Позначити виконаним';cb.setAttribute('aria-label','Виконати: '+t.text);
+  cb.onchange=async()=>{t.done=true;await persist();renderTasks();renderDashboard()};
+  const title=document.createElement('span');title.textContent=t.text;title.title=t.text;
+  const due=document.createElement('span');due.className='secondary';
+  due.textContent=!t.due?'Без строку':t.due<today?'Прострочено · '+t.due:t.due===today?'Сьогодні':t.due;
+  if(t.due&&t.due<today)due.classList.add('due-overdue');
+  if(t.priority==='high')title.classList.add('high-priority');
+  d.append(cb,title,due);upcoming.append(d)
+ }
+ const completed=tasks.filter(t=>t.done).length;
+ $('todayProgress').textContent=tasks.length?`Виконано ${completed} із ${tasks.length} задач`:'Додай першу задачу, щоб почати планування';
  const recent=$('homeRecent');recent.replaceChildren();const homeFiles=$('homeFiles');homeFiles.replaceChildren();
  if(!projects.length){recent.textContent='Ще не додано проєктів';homeFiles.textContent='Ще не додано файлів'};
  for(const f of projects.slice(-6).reverse()){const b=document.createElement('button');b.className='dash-line';b.style.cssText='width:100%;background:transparent;border:0;text-align:left';b.textContent='▤ '+(f.name||f.path.split(/[\\/]/).pop());b.onclick=()=>window.engineer.open(f.path).catch(e=>alert(e.message));homeFiles.append(b)}
  const folders=[...new Set(projects.map(f=>f.path.replace(/[\\\\/][^\\\\/]*$/,'')))].slice(-5).reverse();
  for(const folder of folders){const b=document.createElement('button');b.className='dash-line';b.style.cssText='width:100%;background:transparent;border:0;text-align:left';b.textContent='▣ '+folder.split(/[\\\\/]/).pop();b.onclick=()=>go('projects');recent.append(b)}
- $('homeOverdue').textContent=tasks.filter(t=>!t.done&&t.due&&t.due<new Date().toISOString().slice(0,10)).length+' прострочені';
+ $('homeOverdue').textContent=tasks.filter(t=>!t.done&&t.due&&t.due<localToday()).length+' прострочені';
  renderHomeCalendar();
  const planner=$('plannerList');planner.replaceChildren();
  for(const t of tasks.filter(x=>x.due).sort((a,b)=>a.due.localeCompare(b.due))){const line=document.createElement('div');line.className='dash-line';const txt=document.createElement('span');txt.textContent=(t.done?'✓ ':'○ ')+t.text;const due=document.createElement('span');due.className='secondary';due.textContent=(t.start?t.start+' → ':'')+t.due;line.append(txt,due);planner.append(line)}
@@ -538,21 +680,79 @@ function renderDashboard(){
 const dayMs=86400000;
 function dateDay(s){if(!/^\d{4}-\d{2}-\d{2}$/.test(s||''))return null;const t=Date.parse(s+'T00:00:00Z');return Number.isFinite(t)?Math.floor(t/dayMs):null}
 function renderGantt(){
- const box=$('ganttChart');box.replaceChildren();const items=state.tasks.filter(t=>dateDay(t.due)!==null).map(t=>({...t,from:dateDay(t.start||t.due),to:dateDay(t.due)})).filter(t=>t.from!==null&&t.from<=t.to).sort((a,b)=>a.from-b.from);
- if(!items.length){box.textContent='Немає задач із датою завершення. Додайте їх у розділі «Завдання».';return}
+ const box=$('ganttChart');box.replaceChildren();const selectedProject=$('plannerProject').value;const items=state.tasks.filter(t=>(!selectedProject||t.projectId===selectedProject)&&dateDay(t.due)!==null).map(t=>({...t,from:dateDay(t.start||t.due),to:dateDay(t.due)})).filter(t=>t.from!==null&&t.from<=t.to).sort((a,b)=>a.from-b.from);
+ if(!items.length){$('plannerMetrics').textContent='Немає запланованих робіт';box.textContent='Немає задач із датою завершення. Додайте їх у розділі «Завдання».';return}
  const min=Math.min(...items.map(x=>x.from)),max=Math.max(...items.map(x=>x.to));const span=max-min+1;
  if(span>366){box.textContent='Період понад 366 днів. Звузьте строки задач для перегляду графіка.';return}
- const width=Math.max(640,span*28);const board=document.createElement('div');board.style.width=(width+235)+'px';
+ const totalDays=items.reduce((n,t)=>n+t.to-t.from+1,0),workingDays=items.reduce((n,t)=>n+countWorkingDays(t.from,t.to),0);$('plannerMetrics').textContent=`Робіт: ${items.length} · календарних днів за роботами: ${totalDays} · робочих днів за роботами: ${workingDays} · загальний період: ${span} календарних днів. Суботи та неділі виключено, свята не враховано.`;const width=Math.max(640,span*28);const board=document.createElement('div');board.style.width=(width+235)+'px';
  const head=document.createElement('div');head.className='gantt-row';const label=document.createElement('div');label.className='gantt-name';label.textContent='Робота / дата';head.append(label);const scale=document.createElement('div');scale.className='gantt-scale';scale.style.width=width+'px';for(let d=0;d<span;d++){const cell=document.createElement('span');const dt=new Date((min+d)*dayMs);cell.textContent=String(dt.getUTCDate());cell.title=dt.toISOString().slice(0,10);if([0,6].includes(dt.getUTCDay()))cell.className='gantt-weekend';scale.append(cell)}head.append(scale);board.append(head);
  for(const t of items){const row=document.createElement('div');row.className='gantt-row';const name=document.createElement('div');name.className='gantt-name';name.textContent=t.text;name.title=t.text;const lane=document.createElement('div');lane.className='gantt-lane';lane.style.width=width+'px';lane.style.backgroundSize='28px 100%';const bar=document.createElement('div');bar.className='gantt-bar'+(t.done?' gantt-done':'');bar.style.left=((t.from-min)*28+3)+'px';bar.style.width=((t.to-t.from+1)*28-6)+'px';bar.title=t.text+' | '+(t.start||t.due)+' — '+t.due;bar.textContent=t.to-t.from>2?t.text:'';lane.append(bar);row.append(name,lane);board.append(row)}box.append(board)
 }
-$('exportGantt').onclick=()=>{const rows=[['Назва','Початок','Завершення','Пріоритет','Статус'],...state.tasks.map(t=>[t.text,t.start||t.due||'',t.due||'',t.priority||'normal',t.done?'Виконано':'Активне'])];const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ENGINEER_PRO_Графік_робіт.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$('exportGantt').onclick=()=>{
+ const selected=$('plannerProject').value;
+ const rows=[['Проєкт','Назва роботи','Початок','Завершення','Календарні дні','Робочі дні (Пн–Пт)','Пріоритет','Статус']];
+ for(const t of state.tasks.filter(t=>!selected||t.projectId===selected)){
+  const from=dateDay(t.start||t.due),to=dateDay(t.due);
+  const name=(state.workProjects||[]).find(p=>p.id===t.projectId)?.name||'Без проєкту';
+  rows.push([name,t.text,t.start||t.due||'',t.due||'',from!==null&&to!==null&&to>=from?to-from+1:'',from!==null&&to!==null&&to>=from?countWorkingDays(from,to):'',t.priority||'normal',t.done?'Виконано':'Активне']);
+ }
+ const csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ENGINEER_PRO_Графік_робіт_0.8.0.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)
+};
+
 $('headerNewTask').onclick=()=>{go('tasks');$('taskText').focus()};
 $('headerApps').onclick=()=>go('launchers');
 $('normAdd').onclick=async()=>{try{const files=await window.engineer.pick();const pdfs=(files||[]).filter(x=>/\.pdf$/i.test(x.path||''));for(const file of pdfs){if(!state.projects.some(x=>x.path===file.path))state.projects.push(file)}await persist();renderFiles();renderDashboard();renderNorms();renderDashboard();$('normStatus').textContent='Додано PDF: '+pdfs.length}catch(e){$('normStatus').textContent=e.message}};
 $('normFolder').onclick=()=>window.engineer.folder().catch(e=>$('normStatus').textContent=e.message);
 function renderNorms(){const list=$('normList');list.replaceChildren();for(const file of (state.projects||[]).filter(x=>/\.pdf$/i.test(x.path||''))){const btn=document.createElement('button');btn.textContent='▤ '+(file.name||file.path.split(/[\\/]/).pop());btn.style.margin='7px';btn.onclick=()=>window.engineer.open(file.path).catch(e=>$('normStatus').textContent=e.message);list.append(btn)}if(!list.childNodes.length)list.textContent='Додайте PDF-збірники через кнопку вище.'}
-(async()=>{try{state=Object.assign(state,await window.engineer.load());$('notes').value=state.notes||'';renderTasks();renderFiles();renderNorms();renderDashboard();refresh()}catch(e){alert('Помилка завантаження: '+e.message)}})();
+
+function countWorkingDays(from,to){
+ if(from===null||to===null||to<from)return 0;
+ const weeks=Math.floor((to-from+1)/7),remainder=(to-from+1)%7;
+ let count=weeks*5;
+ for(let i=0;i<remainder;i++){const day=new Date((from+weeks*7+i)*86400000).getUTCDay();if(day!==0&&day!==6)count++}
+ return count;
+}
+function refreshProjectSelectors(){
+ const currentTask=$('taskProject').value,currentPlanner=$('plannerProject').value;
+ for(const [id,all] of [['taskProject',false],['plannerProject',true]]){
+  const el=$(id);el.replaceChildren();const none=document.createElement('option');none.value='';none.textContent=all?'Усі проєкти':'Без проєкту';el.append(none);
+  for(const pr of state.workProjects||[]){const o=document.createElement('option');o.value=pr.id;o.textContent=pr.name;el.append(o)}
+  el.value=all?currentPlanner:currentTask;
+ }
+}
+function renderWorkProjects(){
+ const list=$('workProjectList');list.replaceChildren();
+ for(const pr of state.workProjects||[]){
+  const row=document.createElement('div');row.className='item project-row';
+  const title=document.createElement('strong');title.textContent=pr.name;title.title=pr.name;
+  const count=document.createElement('span');count.className='muted';count.textContent=(state.tasks||[]).filter(t=>t.projectId===pr.id).length+' задач';
+  const sel=document.createElement('select');sel.setAttribute('aria-label','Статус проєкту '+pr.name);
+  for(const [value,label] of [['active','У роботі'],['planned','Заплановано'],['completed','Завершено']]){const o=document.createElement('option');o.value=value;o.textContent=label;sel.append(o)}
+  sel.value=pr.status||'active';sel.onchange=async()=>{pr.status=sel.value;await persist();renderDashboard()};
+  const rename=document.createElement('button');rename.textContent='Назва';rename.onclick=async()=>{const value=prompt('Нова назва проєкту',pr.name);if(!value?.trim())return;pr.name=value.trim();await persist();renderWorkProjects();renderTasks();renderDashboard()};
+  const show=document.createElement('button');show.textContent='Графік';show.onclick=()=>{go('planner');$('plannerProject').value=pr.id;renderGantt()};
+  const remove=document.createElement('button');remove.textContent='×';remove.title='Видалити проєкт (задачі залишаться без прив’язки)';remove.onclick=async()=>{
+   if(!confirm('Видалити проєкт «'+pr.name+'»? Задачі збережуться без прив’язки.'))return;
+   state.workProjects=state.workProjects.filter(x=>x.id!==pr.id);
+   for(const task of state.tasks)if(task.projectId===pr.id)task.projectId='';
+   await persist();refreshProjectSelectors();renderWorkProjects();renderTasks();renderDashboard()
+  };
+  row.append(title,count,sel,rename,show,remove);list.append(row)
+ }
+ if(!list.childNodes.length){const e=document.createElement('p');e.className='muted';e.textContent='Проєктів ще немає. Створи об’єкт, щоб групувати задачі та графіки.';list.append(e)}
+ refreshProjectSelectors()
+}
+$('createProject').onclick=async()=>{
+ const name=$('newProjectName').value.trim();
+ if(!name)return;
+ if((state.workProjects||[]).some(p=>p.name.toLocaleLowerCase('uk')===name.toLocaleLowerCase('uk'))){alert('Проєкт із такою назвою вже існує');return}
+ const id='pr_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7);
+ state.workProjects.push({id,name,status:$('newProjectStatus').value,created:localToday()});
+ $('newProjectName').value='';await persist();renderWorkProjects();renderDashboard()
+};
+$('plannerProject').addEventListener('change',renderGantt);
+(async()=>{try{state=Object.assign(state,await window.engineer.load());state.workProjects=Array.isArray(state.workProjects)?state.workProjects:[];renderWorkProjects();$('notes').value=state.notes||'';renderTasks();renderFiles();renderNorms();renderDashboard();refresh()}catch(e){alert('Помилка завантаження: '+e.message)}})();
 </script><div id="updateDock" style="position:fixed;right:18px;bottom:12px;z-index:999;background:#252C35;border:1px solid #4a3b24;border-radius:12px;padding:9px 12px;color:#f2f4f7;font:12px sans-serif;box-shadow:0 4px 18px #0008"><span id="updateLabel">Оновлення: завантаження…</span> <button id="updateCheck" style="margin-left:8px;background:#FF9500;color:#101318;border:0;border-radius:7px;padding:7px;cursor:pointer">Перевірити</button><button id="updateDownload" style="display:none;margin-left:5px">Завантажити</button><button id="updateInstall" style="display:none;margin-left:5px">Перезапустити</button></div>
 <script>
 (function(){const l=document.getElementById('updateLabel'),d=document.getElementById('updateDownload'),i=document.getElementById('updateInstall');function render(s){l.textContent=s.status||'—';d.style.display=s.available&&!s.downloaded?'inline-block':'none';i.style.display=s.downloaded?'inline-block':'none'}window.engineer.updateStatus().then(render).catch(e=>l.textContent=e.message);window.engineer.onUpdate(render);document.getElementById('updateCheck').onclick=()=>window.engineer.checkUpdate().then(render);d.onclick=()=>window.engineer.downloadUpdate().catch(e=>l.textContent=e.message);i.onclick=()=>window.engineer.installUpdate()})();

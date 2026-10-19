@@ -1,0 +1,15 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {compare}=require('./compare-engine');
+const header=['Шифр','Найменування','Одиниця виміру','Кількість'];
+const a=[header,['КБ1-1','Прокладання кабелю','м','100'],['КБ1-2','Прокладання кабелю','м','50'],['КБ2-1','Монтаж лотка','м','25']];
+const b=[header,['КБ1-1','Прокладання кабелю','м','100'],['КБ1-2','Прокладання кабелю','м','45'],['КБ2-9','Монтаж лотка','м','25']];
+const r=compare(a,b);
+assert.equal(r.summary.rowsA,3);assert.equal(r.summary.rowsB,3);
+assert.equal(r.results.find(x=>x.codeA==='КБ1-1').status,'Збіг назви, одиниці та кількості');
+assert.equal(r.results.find(x=>x.codeA==='КБ1-2').status,'Розбіжність кількості');
+assert.equal(r.results.find(x=>x.codeA==='КБ2-1').status,'Розбіжність шифру');
+assert.equal(r.results.find(x=>x.codeA==='КБ2-1').codeB,'КБ2-9');
+const ambiguous=compare([header,['','Кабель силовий ВВГ','м','10']],[header,['A','Кабель силовий ВВГ','м','10'],['B','Кабель силовий ВВГ','м','10']]);
+assert(ambiguous.results.some(x=>x.status.startsWith('Неоднозначно')));
+console.log('Comparison regression tests passed');

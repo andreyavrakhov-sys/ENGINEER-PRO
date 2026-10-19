@@ -1,6 +1,6 @@
 {
   "name": "engineer-pro",
-  "version": "0.7.2",
+  "version": "0.8.4",
   "private": true,
   "description": "ENGINEER PRO desktop with free-provider fallback and GitHub auto-updates",
   "main": "main.js",
@@ -27,7 +27,9 @@
       "update-config.json",
       "compare-engine.js",
       "estimate-importer.js",
-      "sunset-tower.png"
+      "sunset-tower.png",
+      "specification-analyzer.js",
+      "pdf-enhanced.js"
     ],
     "win": {
       "target": [
@@ -54,9 +56,15 @@
         "releaseType": "release"
       }
     ],
-    "generateUpdatesFilesForAllChannels": false
+    "generateUpdatesFilesForAllChannels": false,
+    "asarUnpack": [
+      "**/*.node"
+    ]
   },
   "dependencies": {
-    "electron-updater": "^6.6.2"
+    "electron-updater": "^6.6.2",
+    "pdfjs-dist": "3.11.174",
+    "tesseract.js": "5.1.1",
+    "@napi-rs/canvas": "0.1.80"
   }
 }

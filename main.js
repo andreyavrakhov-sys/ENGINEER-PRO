@@ -100,6 +100,9 @@ ipcMain.handle('document:compare',(_event,{a,b})=>{if(!Array.isArray(a)||!Array.
 
 const estimateImporter=require('./estimate-importer');
 ipcMain.handle('estimate:import',(_e,p)=>estimateImporter.extractFile(p));
+const specificationAnalyzer=require('./specification-analyzer');
+ipcMain.handle('spec:analyze',(_e,args)=>specificationAnalyzer.analyze(typeof args==='string'?args:args.path,{ocr:args?.ocr===true}));
+ipcMain.handle('spec:compare',(_e,{spec,estimate})=>specificationAnalyzer.compare(spec,estimate));
 
 const {execFile}=require('child_process');
 const crypto=require('crypto');
