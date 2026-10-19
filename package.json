@@ -1,12 +1,13 @@
 {
   "name": "engineer-pro",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "private": true,
   "description": "ENGINEER PRO desktop with free-provider fallback and GitHub auto-updates",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win nsis --x64"
+    "dist": "electron-builder --win nsis --x64",
+    "check": "node --check main.js && node --check preload.js && node --check shared/sync.js && node --check android/www/app.js"
   },
   "devDependencies": {
     "electron": "^35.7.5",
@@ -29,7 +30,9 @@
       "estimate-importer.js",
       "sunset-tower.png",
       "specification-analyzer.js",
-      "pdf-enhanced.js"
+      "pdf-enhanced.js",
+      "shared/**/*",
+      "sync.html"
     ],
     "win": {
       "target": [

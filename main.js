@@ -131,3 +131,25 @@ ipcMain.handle('launchers:open',async(_event,id)=>{
  await new Promise((resolve,reject)=>{const child=execFile(p,[],{cwd:path.dirname(p),windowsHide:false},err=>{if(err)console.error('Програма завершилась:',err.message)});child.once('spawn',resolve);child.once('error',reject)});
  return true;
 });
+
+// ENGINEER PRO 1.0: explicit, user-initiated sync. Local data remains authoritative until user selects download.
+const syncTransport=require('./shared/sync');
+ipcMain.handle('sync:run',async(_event,{config,email,password,direction})=>{
+ if(!['upload','download'].includes(direction))throw Error('Невідомий напрям синхронізації');
+ const session=await syncTransport.signIn(config,email,password);
+ if(!session.access_token||!session.user?.id)throw Error('Не отримано сесію');
+ if(direction==='upload'){
+  const payload=read('data.json',{tasks:[],notes:'',links:[],projects:[]});
+  await syncTransport.push(config,session.access_token,session.user.id,payload);
+  return {direction:'upload',ok:true};
+ }
+ const remote=await syncTransport.pull(config,session.access_token);
+ if(!remote)return {direction:'download',ok:false,reason:'empty'};
+ // Back up before replacing the user's local state.
+ const local=read('data.json',{});
+ write('data.backup-before-sync.json',local);
+ write('data.json',remote.payload);
+ return {direction:'download',ok:true,restartRequired:true};
+});
+
+ipcMain.handle('sync:open',()=>{const child=new BrowserWindow({width:720,height:780,parent:win,webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true}});child.loadFile('sync.html');return true;});
