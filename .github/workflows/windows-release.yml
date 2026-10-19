@@ -1,99 +1,82 @@
-name: Build and publish ENGINEER PRO
-
+name: Windows release (optional)
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version, e.g. 0.4.0'
+        description: 'Version, e.g. 0.9.0'
         required: true
+        default: '1.0.0'
         type: string
-
 permissions:
   contents: write
-
 concurrency:
   group: engineer-pro-release
   cancel-in-progress: false
-
 jobs:
   release:
     runs-on: windows-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: npm
-
       - name: Validate version
         shell: pwsh
         env:
           REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           $version = $env:REQUESTED_VERSION
-          if ($version -notmatch '^\d+\.\d+\.\d+$') {
-            throw 'Version must look like 0.4.0'
-          }
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must be X.Y.Z' }
           "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
-
       - name: Install dependencies
         shell: pwsh
         run: |
           npm install --no-audit --no-fund
-          if ($LASTEXITCODE -ne 0) {
-            throw "npm install failed"
-          }
-
+          if ($LASTEXITCODE -ne 0) { throw 'npm install failed' }
       - name: Set package version for build
         shell: pwsh
         run: |
           $current = node -p "require('./package.json').version"
-          if ($current -eq $env:RELEASE_VERSION) {
-            Write-Host "Version already set: $current"
-          } else {
+          if ($current -ne $env:RELEASE_VERSION) {
             npm version $env:RELEASE_VERSION --no-git-tag-version --ignore-scripts
-            if ($LASTEXITCODE -ne 0) {
-              throw "npm version failed"
-            }
+            if ($LASTEXITCODE -ne 0) { throw 'npm version failed' }
           }
-
-      - name: Build Windows installer and update metadata
-        run: npm run dist -- --publish never
-
+      - name: Build Windows installer
+        shell: pwsh
+        run: |
+          npm run dist -- --publish never
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
       - name: Verify installer assets
         shell: pwsh
         run: |
           $v = $env:RELEASE_VERSION
-          $files = @(
-            "dist/ENGINEER_PRO_Setup_$v.exe",
-            "dist/ENGINEER_PRO_Setup_$v.exe.blockmap",
-            "dist/latest.yml"
-          )
-          foreach ($file in $files) {
-            if (-not (Test-Path $file)) {
-              throw "Missing build asset: $file"
-            }
-            Write-Host "OK: $file"
+          foreach ($file in @("dist/ENGINEER_PRO_Setup_$v.exe", "dist/ENGINEER_PRO_Setup_$v.exe.blockmap", "dist/latest.yml")) {
+            if (-not (Test-Path $file)) { throw "Missing: $file" }
           }
-
       - name: Publish GitHub release
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $tag = "v$env:RELEASE_VERSION"
-          gh release view $tag *> $null
+          $assets = @(
+            "dist/ENGINEER_PRO_Setup_$env:RELEASE_VERSION.exe",
+            "dist/ENGINEER_PRO_Setup_$env:RELEASE_VERSION.exe.blockmap",
+            "dist/latest.yml"
+          )
+          gh release view $tag --json tagName *> $null
           if ($LASTEXITCODE -eq 0) {
-            throw "Release $tag already exists"
+            Write-Host "Release $tag exists; updating its assets"
+            gh release upload $tag @assets --clobber
+            if ($LASTEXITCODE -ne 0) { throw 'Release asset upload failed' }
+          } else {
+            Write-Host "Creating release $tag"
+            gh release create $tag @assets `
+              --target "$env:GITHUB_SHA" `
+              --title "ENGINEER PRO $env:RELEASE_VERSION" `
+              --notes "Multi-file document and specification comparison" `
+              --latest
+            if ($LASTEXITCODE -ne 0) { throw 'Release creation failed' }
           }
-          gh release create $tag `
-            "dist/ENGINEER_PRO_Setup_$env:RELEASE_VERSION.exe" `
-            "dist/ENGINEER_PRO_Setup_$env:RELEASE_VERSION.exe.blockmap" `
-            "dist/latest.yml" `
-            --target "$env:GITHUB_SHA" `
-            --title "ENGINEER PRO $env:RELEASE_VERSION" `
-            --notes "ENGINEER PRO $env:RELEASE_VERSION" `
-            --latest
