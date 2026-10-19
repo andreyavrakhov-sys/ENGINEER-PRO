@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),os=require('os');
 let win;const base=()=>app.getPath('userData');const store=(n)=>path.join(base(),n);
 function read(n,fallback){try{return JSON.parse(fs.readFileSync(store(n),'utf8'))}catch{return fallback}}
 function write(n,obj){fs.writeFileSync(store(n),JSON.stringify(obj,null,2),'utf8')}
-function create(){win=new BrowserWindow({width:1480,height:920,minWidth:980,minHeight:650,backgroundColor:'#101318',webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true}});win.loadFile('index.html');win.setMenuBarVisibility(false)}
+function create(){win=new BrowserWindow({width:1480,height:920,minWidth:980,minHeight:560,backgroundColor:'#101318',webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true}});win.loadFile('index.html');win.setMenuBarVisibility(false)}
 const {autoUpdater}=require('electron-updater');
 const updateConfig=require('./update-config.json');
 const updateEnabled=Boolean(updateConfig.githubOwner&&updateConfig.githubRepo);

@@ -1,6 +1,6 @@
 {
   "name": "engineer-pro",
-  "version": "0.6.0",
+  "version": "0.7.1",
   "private": true,
   "description": "ENGINEER PRO desktop with free-provider fallback and GitHub auto-updates",
   "main": "main.js",
@@ -26,7 +26,8 @@
       "package.json",
       "update-config.json",
       "compare-engine.js",
-      "estimate-importer.js"
+      "estimate-importer.js",
+      "sunset-tower.png"
     ],
     "win": {
       "target": [

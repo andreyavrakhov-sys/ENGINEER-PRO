@@ -61,9 +61,283 @@ button.primary:hover{background:#ffc16d}
 .gantt-done{background:linear-gradient(90deg,#198a6c,#4ac8a4)}
 .task-entry{grid-template-columns:minmax(160px,1fr) 145px 145px 145px auto}
 @media(max-width:1000px){.task-entry{grid-template-columns:1fr 1fr}}
-</style></head><body><header><div><strong>⚡ ENGINEER PRO</strong> <span class="pill">v0.6.0</span></div><div class="header-tools"><input id="globalSearch" aria-label="Пошук у задачах, файлах і програмах" placeholder="⌕ Пошук… (Ctrl+K)" style="width:230px"><span id="clock"></span><button id="headerNewTask" title="Створити завдання">＋ Завдання</button><button id="headerApps" title="Мої програми">▦ Програми</button></div></header><div class="layout"><nav><button class="active" data-page="home">◈ Огляд</button><button data-page="ai">✦ AI HUB</button><button data-page="projects">▣ Проєкти й файли</button><button data-page="calc">∑ Електрокалькулятор</button><button data-page="tasks">☑ Завдання</button><button data-page="launchers">▦ Програми та папки</button><button data-page="norms">▤ Нормативні документи</button><button data-page="planner">▥ Календар робіт</button><button data-page="settings">⚙ Налаштування AI</button><div style="margin:30px 12px;color:#7d8794;font-size:12px">Локальна програма<br>Без телеметрії застосунку</div></nav><main><div id="searchResults" class="search-results" hidden></div>
-<section class="page active" id="home"><div class="hero"><div><span class="eyebrow">ІНЖЕНЕРНИЙ РОБОЧИЙ ПРОСТІР</span><h1>Центр керування</h1><p class="muted">Проєкти, завдання, розрахунки та робочі програми в одному місці</p></div><button class="primary" data-go="tasks">＋ Нова задача</button></div><div class="dashboard-metrics"><div class="metric-tile"><small>Активні задачі</small><strong id="homeTaskCount">0</strong></div><div class="metric-tile"><small>Файли проєктів</small><strong id="homeFileCount">0</strong></div><div class="metric-tile"><small>Мої програми</small><strong id="homeAppCount">0</strong></div><div class="metric-tile"><small>Виконано задач</small><strong id="homeDoneCount">0</strong></div></div><div class="card"><div class="section-heading"><h2>Швидкий запуск програм і папок</h2><button data-go="launchers">Усі ярлики →</button></div><div id="homeLaunchers" class="launcher-tiles"></div></div><div class="grid"><div class="card"><div class="section-heading"><h2>Найближчі задачі</h2><button data-go="tasks">Всі задачі →</button></div><div id="homeUpcoming"></div></div><div class="card"><div class="section-heading"><h2>Останні файли</h2><button data-go="projects">Відкрити проєкти →</button></div><div id="homeRecent"></div></div></div><div class="grid secondary-grid"><div class="card"><h2>Система</h2><div id="stats">Завантаження…</div><button id="refresh">Оновити</button></div><div class="card"><h2>Швидкі дії</h2><button data-go="ai">Відкрити AI HUB</button> <button data-go="calc">Калькулятор</button><p><button id="openfolder">Відкрити папку</button></p></div><div class="card"><h2>Нотатки</h2><textarea id="notes" placeholder="Ваші нотатки зберігаються локально"></textarea><p><button id="saveNotes" class="primary">Зберегти</button></p></div></div></section>
-<section class="page" id="ai"><h1>ENGINEER AI HUB <span class="pill">v0.6.0</span></h1><p class="muted">Хмарні моделі та локальна Ollama. Запити передаються обраному провайдеру.</p><div class="card"><div class="row"><div><label>Провайдер</label><select id="provider"><option value="auto">Автоматично — безкоштовні по черзі</option><option value="ollama">Ollama (локально)</option><option value="openrouter">OpenRouter (безкоштовні моделі)</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Claude (Anthropic)</option></select></div><div><label>Ідентифікатор моделі</label><input id="model" placeholder="наприклад, llama3.2"></div></div><label style="display:block;margin:8px 0"><input type="checkbox" id="allowPaidAuto" style="width:auto"> Дозволити платні API в автоматичному режимі (можливі витрати)</label><p class="muted">Безкоштовний режим: Gemini → OpenRouter Free → локальна Ollama. Потрібні власні ключі Gemini/OpenRouter із доступом до безкоштовних тарифів. Ліміти провайдерів діють. Перемикання не обходить ліміти чи обмеження сервісів.</p><label>Діалог</label><div class="chat" id="chat"><div class="muted">Налаштуйте модель і введіть запит. Доступ до локальних файлів не передається автоматично.</div></div><label>Повідомлення</label><textarea id="prompt" placeholder="Поставте запитання або попросіть виконати інженерний розрахунок"></textarea><div class="row"><button class="primary" id="ask">Надіслати</button><button id="clearChat">Очистити діалог</button></div><div id="aiStatus" class="status"></div></div></section>
+
+/* ENGINEER PRO 0.7 dashboard matching approved concept */
+:root{--bg:#061625;--panel:#081f31;--line:#1b3a50;--amber:#ffbd2f}
+body{background:#051521;color:#edf6ff;font-family:Segoe UI,Arial,sans-serif}
+header{background:#061b2b;border-bottom:1px solid #173a50;min-height:67px;box-shadow:none}
+header strong{color:#ffb42d;font-size:23px;letter-spacing:1.3px}
+header .pill{background:#40331d;color:#ffda7c;border-radius:30px;padding:6px 12px}
+.layout{grid-template-columns:238px minmax(0,1fr)}
+nav{background:#061a2a;border-right:1px solid #17344a;top:67px;height:calc(100vh - 67px)}
+nav button{font-size:14px;min-height:42px;color:#edf4ff}
+nav button.active{background:linear-gradient(90deg,#5b4018,#2f2b22);border-left:4px solid #ffc62e;color:#ffcc4c}
+main{max-width:none;padding:16px 18px}
+.card{background:linear-gradient(145deg,#0a2437,#071b2c);border:1px solid #204158;border-radius:12px;padding:16px;box-shadow:none;min-width:0}
+.card h2{color:#ffcf44;font-size:16px}
+.home-workspace{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(350px,1fr);gap:14px;align-items:start}
+.home-primary,.home-aside{display:flex;flex-direction:column;gap:13px;min-width:0}
+.hero{min-height:140px;margin:0;padding:23px 28px;background:linear-gradient(90deg,rgba(6,29,48,.96),rgba(22,37,54,.45) 54%,rgba(4,19,35,.4)),linear-gradient(135deg,#142e47,#a84937 72%,#3b2344);border:1px solid #304359;position:relative;overflow:hidden}
+.hero:after{content:' ';position:absolute;inset:0;pointer-events:none;opacity:.42;background-image:linear-gradient(66deg,transparent 75%,#091d2b 75.3%,transparent 75.6%),linear-gradient(114deg,transparent 77%,#091d2b 77.3%,transparent 77.6%),repeating-linear-gradient(0deg,transparent 0 24px,#0d2030 25px,transparent 26px);background-size:260px 100%,260px 100%,100% 100%;background-position:right center}
+.hero>div{position:relative;z-index:1}.hero h1{font-size:32px;color:#fff;letter-spacing:2px}.hero p{font-size:13px;color:#e5edf6}
+.hero-motto{border:1px solid #6c7480;background:#132e48b5;border-radius:12px;padding:12px 18px;font-style:italic;color:#fff;line-height:1.7;white-space:nowrap}
+.dashboard-metrics{margin:0;gap:10px}
+.metric-tile{display:flex;flex-direction:row;align-items:center;gap:12px;background:#092135;border-color:#1a4159;padding:14px 12px}
+.metric-tile strong{display:block;color:#fff;font-size:27px}.metric-tile small{font-size:11px}
+.metric-icon{display:grid;place-items:center;flex:0 0 52px;height:52px;border-radius:13px;font-size:29px;color:white}
+.metric-icon.blue{background:#0883ef}.metric-icon.green{background:#00b963}.metric-icon.violet{background:#7e42e9}.metric-icon.orange{background:#f49405}
+.metric-sub{font-size:10px;color:#ff9b8c}
+.section-heading{margin-bottom:11px}.section-heading button,.aside-link{background:transparent;border:0;color:#d8eaff;font-size:12px;padding:6px;cursor:pointer}
+.quick-access .action-tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+.action-tile{border:1px solid #24425a;border-radius:10px;min-height:94px;padding:10px 4px;color:#fff;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.action-tile span{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;font-size:24px;background:#ffffff17}
+.action-tile.amber{background:#463219}.action-tile.purple{background:#2c285e}.action-tile.sky{background:#13365a}.action-tile.emerald{background:#07453d}.action-tile.coral{background:#4b2737}.action-tile.cobalt{background:#173d60}
+.home-two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}.home-two-col .card{min-height:260px}
+.dash-line{min-height:37px;font-size:12px;border-color:#193b50}
+.launcher-tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.launcher-tile{background:#102e44;border-color:#254961;padding:10px;min-height:76px;justify-content:center}
+.launcher-tile .launch-icon{font-size:22px}.launcher-tile .launch-name{font-size:12px}
+.home-aside .card{padding:15px}.home-aside #homeUpcoming{min-height:155px}
+.home-aside-split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.calendar-top{display:flex;align-items:center;justify-content:space-between;gap:4px;margin:12px 0}
+.calendar-top strong{font-size:12px;text-transform:capitalize}.calendar-top button{padding:2px 7px;font-size:23px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}
+.calendar-grid .cal-weekday{font-size:10px;color:#b4c7d6}
+.calendar-grid button{font-size:11px;border:0;background:transparent;padding:6px 0;min-width:0;border-radius:6px}
+.calendar-grid button.today{background:#ffbc32;color:#162231;font-weight:800}
+.calendar-grid button.has-task:not(.today){color:#ffca60;border-bottom:2px solid #ffca60}
+.home-aside textarea{width:100%;min-height:194px;resize:vertical;background:#0a2335}
+.ai-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ai-tile{border:1px solid #4a536c;border-radius:9px;color:#fff;min-height:88px;font-size:28px}
+.ai-tile small{display:block;font-size:11px}.ai-tile.teal{background:#008b99}.ai-tile.purple{background:#6536d4}.ai-tile.amber{background:#bd5420}
+.compact-system #stats{font-size:12px}
+@media(max-width:1320px){.home-workspace{grid-template-columns:1fr}.home-aside-split{grid-template-columns:1fr 1fr}}
+@media(max-width:880px){.quick-access .action-tiles{grid-template-columns:repeat(3,1fr)}.dashboard-metrics{grid-template-columns:repeat(2,1fr)}.home-two-col{grid-template-columns:1fr}.home-aside-split{grid-template-columns:1fr}}
+/* Compact ENGINEER PRO dashboard — local banner image and real application data */
+:root{color-scheme:dark;--bg:#061625;--panel:#081f31;--line:#1b3a50;--amber:#ffbd2f}
+html,body{width:100%;min-height:100%;background:#061625}
+body{background:#051521;color:#edf5fc;font-family:"Segoe UI",Arial,sans-serif;overflow-x:hidden}
+button{transition:background .15s,border-color .15s,transform .15s}
+button:hover{border-color:#ffbd36}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #ffbd36;outline-offset:2px}
+button.primary{background:#ffb52e;color:#172334}
+button.primary:hover{background:#ffd05a}
+header{height:56px;min-height:56px;padding:0 17px;background:#071b2b;border-bottom:1px solid #17374d;box-shadow:none}
+header strong{color:#ffbd36;font-size:21px;letter-spacing:1.2px}
+header .pill{background:#40331d;color:#ffda7c;border-radius:30px;padding:5px 10px}
+header .header-tools{gap:8px}
+header .header-tools button{padding:7px 10px}
+#globalSearch{background:#10273a;border:1px solid #25445b;border-radius:22px}
+#globalSearch:focus{border-color:#ffbd36}
+.layout{grid-template-columns:210px minmax(0,1fr);min-height:calc(100dvh - 56px)}
+nav{position:sticky;top:56px;height:calc(100dvh - 56px);overflow-y:auto;padding:12px 9px;background:#071a29;border-right:1px solid #17374d}
+nav button{min-height:37px;padding:9px 10px;margin:3px 0;border-radius:7px;font-size:12px;color:#edf4ff}
+nav button:hover{background:#173247;color:#fff}
+nav button.active{background:linear-gradient(90deg,#533c1b,#272a29);border-left:3px solid #ffc333;color:#ffd04e}
+main{max-width:none;padding:11px 13px}
+.card{margin:0;padding:11px;border:1px solid #1c4056;border-radius:9px;background:linear-gradient(145deg,#0a2437,#071b2c);box-shadow:none}
+.card h2,.section-heading h2{color:#ffcf44;font-size:13px}
+.card h2{margin-bottom:8px}
+.home-workspace{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(320px,1fr);gap:11px;align-items:start}
+.home-primary,.home-aside{display:flex;flex-direction:column;gap:9px;min-width:0}
+.hero{height:106px;min-height:106px;margin:0;padding:13px 19px;border:1px solid #304359;border-radius:10px;position:relative;overflow:hidden;background-image:linear-gradient(90deg,rgba(4,22,37,.96) 0%,rgba(4,22,37,.82) 38%,rgba(4,22,37,.18) 100%),url("./sunset-tower.png");background-size:cover;background-position:center 47%}
+.hero:after{opacity:.12}
+.hero h1{margin:4px 0;color:#fff;font-size:27px;letter-spacing:1.7px}
+.hero p{margin:0;color:#e5edf6;font-size:11px}
+.eyebrow{font-size:9px;letter-spacing:1.5px;color:#ffbc60;font-weight:700}
+.hero-motto{padding:8px 11px;border:1px solid #6c7480;border-radius:9px;background:#132e48b5;color:#fff;font-size:11px;font-style:italic;line-height:1.45;white-space:nowrap}
+.dashboard-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0}
+.metric-tile{display:flex;flex-direction:row;align-items:center;gap:8px;min-width:0;min-height:68px;padding:9px 8px;border:1px solid #1a4159;border-radius:9px;background:#092135}
+.metric-tile strong{display:block;color:#fff;font-size:22px;line-height:1.05}
+.metric-tile small{color:#c1d0df;font-size:10px}
+.metric-icon{display:grid;place-items:center;flex:0 0 39px;height:39px;border-radius:9px;color:#fff;font-size:22px}
+.metric-icon.blue{background:#0883ef}.metric-icon.green{background:#00b963}.metric-icon.violet{background:#7e42e9}.metric-icon.orange{background:#f49405}
+.metric-sub{color:#ff9b8c;font-size:9px}
+.section-heading{gap:8px;margin-bottom:7px}
+.section-heading button,.aside-link{padding:4px;border:0;background:transparent;color:#d8eaff;font-size:10px;cursor:pointer}
+.quick-access .action-tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}
+.action-tile{min-height:72px;padding:6px 3px;border:1px solid #24425a;border-radius:8px;color:#fff;font-size:10px;gap:5px}
+.action-tile span{width:32px;height:32px;border-radius:8px;font-size:20px}
+.action-tile.amber{background:#463219}.action-tile.purple{background:#2c285e}.action-tile.sky{background:#13365a}.action-tile.emerald{background:#07453d}.action-tile.coral{background:#4b2737}.action-tile.cobalt{background:#173d60}
+.home-two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.home-two-col .card{min-height:202px}
+.dash-line{min-height:27px;padding:6px 2px;border-color:#193b50;font-size:10px}
+.dash-line .secondary{color:#9daabc;font-size:9px;white-space:nowrap}
+.launcher-tiles{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-top:8px}
+.launcher-tile{min-width:0;min-height:65px;padding:6px 3px;gap:4px;align-items:center;justify-content:center;text-align:center;border-color:#254961;border-radius:8px;background:#102e44}
+.launcher-tile .launch-icon{font-size:19px}.launcher-tile .launch-name{font-size:9px}
+.home-aside .card{padding:11px}
+.home-aside #homeUpcoming{min-height:149px}
+#homeUpcoming .dash-line{min-height:27px;gap:5px}
+#homeUpcoming .dash-line>span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-aside-split{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.calendar-top{margin:6px 0}
+.calendar-top strong{font-size:10px}
+.calendar-top button{padding:1px 4px;font-size:18px}
+.calendar-grid{gap:1px}
+.calendar-grid .cal-weekday{font-size:8px}
+.calendar-grid button{min-width:0;padding:4px 0;border:0;background:transparent;font-size:9px}
+.calendar-grid button.today{background:#ffbc32;color:#162231}
+.calendar-grid button.has-task:not(.today){color:#ffca60}
+.home-aside textarea{width:100%;min-height:151px;padding:8px;background:#0a2335;font-size:9px;line-height:1.35}
+.ai-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ai-tile{min-height:72px;border-radius:8px;font-size:23px}
+.ai-tile small{font-size:9px}
+.ai-tile.teal{background:#008b99}.ai-tile.purple{background:#6536d4}.ai-tile.amber{background:#bd5420}
+.compact-system{font-size:10px}
+.home-primary>.compact-system{position:fixed;z-index:6;left:8px;bottom:8px;width:194px;max-height:145px;overflow:auto;padding:9px;background:linear-gradient(145deg,#0a2437,#071b2c);border-color:#1c4056}
+.compact-system .section-heading h2{margin:0;font-size:11px}
+.compact-system #stats{font-size:9px;line-height:1.3}
+.compact-system #openfolder{width:100%;padding:4px;font-size:9px}
+#updateDock{position:static!important;display:flex;width:max-content;max-width:calc(100% - 24px);align-items:center;gap:5px;margin:8px 12px 12px auto;padding:5px 8px!important;border-color:#24445a!important;border-radius:8px!important;background:#0a2437!important;opacity:.84;font-size:10px!important}
+#updateDock button{padding:4px 6px!important;font-size:9px!important}
+@media(max-width:1100px){
+  header{height:40px;min-height:40px;padding:0 11px}
+  header strong{font-size:18px;letter-spacing:1px}
+  header .pill{padding:4px 8px;font-size:10px}
+  header .header-tools{gap:5px}
+  header .header-tools button{padding:5px 7px;font-size:11px}
+  header .header-tools #globalSearch{width:clamp(170px,32vw,330px)!important;padding:7px 9px;font-size:11px}
+  header .header-tools #clock{display:inline-block;max-width:230px;font-size:10px;white-space:nowrap}
+  .layout{grid-template-columns:155px minmax(0,1fr);min-height:calc(100dvh - 40px)}
+  nav{top:40px;height:calc(100dvh - 40px);padding:8px 7px}
+  nav button{min-height:28px;padding:5px 8px;margin:2px 0;font-size:11px}
+  main{padding:7px 8px}
+  .home-workspace{grid-template-columns:minmax(0,1fr) minmax(280px,290px);gap:8px}
+  .home-primary,.home-aside{gap:5px}
+  .hero{height:86px;min-height:86px;padding:9px 13px}
+  .hero h1{margin:2px 0;font-size:23px}
+  .hero p{font-size:9px}
+  .eyebrow{font-size:8px}
+  .hero-motto{padding:6px 8px;font-size:9px}
+  .dashboard-metrics{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px}
+  .metric-tile{min-height:50px;padding:6px 5px;gap:5px}
+  .metric-icon{flex-basis:30px;height:30px;border-radius:7px;font-size:18px}
+  .metric-tile small{font-size:8px;white-space:nowrap}
+  .metric-tile strong{font-size:19px}
+  .metric-sub{font-size:8px;white-space:nowrap}
+  .card{padding:7px;border-radius:8px}
+  .section-heading{margin-bottom:4px}
+  .section-heading h2,.card h2{margin-bottom:5px;font-size:11px}
+  .section-heading button,.aside-link{padding:3px;font-size:9px}
+  .quick-access .action-tiles{gap:5px}
+  .action-tile{min-height:54px;padding:4px 2px;gap:3px;font-size:8px}
+  .action-tile span{width:25px;height:25px;border-radius:6px;font-size:16px}
+  .home-two-col{gap:5px}
+  .home-two-col .card{min-height:0}
+  .dash-line{min-height:20px;padding:3px 1px;font-size:9px;line-height:1.15}
+  .dash-line .secondary{font-size:8px}
+  .launcher-tiles{grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin-top:5px}
+  .launcher-tile{min-height:47px;padding:4px 2px;gap:2px}
+  .launcher-tile .launch-icon{font-size:16px}
+  .launcher-tile .launch-name{font-size:8px}
+  .home-aside .card{padding:7px}
+  .home-primary>.compact-system{left:6px;bottom:6px;width:143px;max-height:102px;padding:6px}
+  .compact-system .section-heading h2{font-size:9px}
+  .compact-system #stats{font-size:7px;line-height:1.1}
+  .compact-system #openfolder{padding:3px;font-size:7px}
+  .home-aside #homeUpcoming{min-height:0}
+  #homeUpcoming .dash-line{min-height:20px;gap:3px;padding:2px 0}
+  .home-aside-split{gap:5px}
+  .calendar-top{margin:3px 0}
+  .calendar-top strong{font-size:9px}
+  .calendar-top button{padding:0 3px;font-size:15px}
+  .calendar-grid .cal-weekday{font-size:7px}
+  .calendar-grid button{padding:2px 0;font-size:8px}
+  .home-aside textarea{height:140px;min-height:140px;padding:5px;font-size:7.5px;line-height:1.15}
+  .ai-tiles{gap:4px}
+  .ai-tile{min-height:52px;padding:3px 1px;font-size:18px}
+  .ai-tile small{font-size:7px}
+}
+@media(max-width:940px){
+  .home-workspace{grid-template-columns:1fr}
+  .home-aside-split{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  header{padding:0 10px}
+  header .header-tools #globalSearch{width:130px!important}
+  header .header-tools #clock,header .header-tools #headerNewTask,header .header-tools #headerApps{display:none}
+  .layout{grid-template-columns:1fr}
+  nav{position:relative;top:0;height:auto;display:flex;overflow-x:auto;white-space:nowrap;padding:5px}
+  nav button{width:auto;flex:0 0 auto}
+  main{padding:8px}
+  .home-workspace,.home-two-col{grid-template-columns:1fr}
+  .dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .quick-access .action-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .home-aside-split{grid-template-columns:1fr 1fr}
+  .hero-motto{display:none}
+  .home-primary>.compact-system{position:static;width:auto;max-height:none}
+}
+
+/* 0.7.1 visual refinement */
+body{font-size:14px;line-height:1.45}
+header{height:62px;min-height:62px;padding:0 20px}
+.layout{grid-template-columns:220px minmax(0,1fr)}
+nav{top:62px;height:calc(100dvh - 62px);padding:15px 10px}
+nav button{font-size:13px;min-height:41px;padding:9px 11px}
+main{padding:17px 19px}
+.home-workspace{grid-template-columns:minmax(0,1.75fr) minmax(340px,.9fr);gap:15px}
+.home-primary,.home-aside{gap:13px}
+.card,.home-aside .card{padding:16px;border-radius:12px}
+.card h2,.section-heading h2{font-size:15px}
+.section-heading{margin-bottom:11px}
+.section-heading button,.aside-link{font-size:12px}
+.hero{height:160px;min-height:160px;padding:22px 25px;border-radius:14px}
+.hero h1{font-size:32px}.hero p{font-size:13px}.eyebrow{font-size:11px}.hero-motto{font-size:12px}
+.dashboard-metrics{gap:10px}.metric-tile{min-height:87px;padding:12px 9px;gap:9px}
+.metric-icon{flex-basis:45px;height:45px;font-size:24px}.metric-tile small{font-size:11px}.metric-tile strong{font-size:27px}.metric-sub{font-size:10px}
+.quick-access .action-tiles{gap:9px}.action-tile{min-height:102px;font-size:12px;gap:8px;padding:10px 4px}.action-tile span{width:43px;height:43px;font-size:24px}
+.action-tile:hover,.ai-tile:hover,.launcher-tile:hover{transform:translateY(-2px);filter:brightness(1.13)}
+.home-two-col{gap:13px}.home-two-col .card{min-height:250px}.dash-line{min-height:35px;font-size:12px;padding:8px 3px}.dash-line .secondary{font-size:10px}
+.launcher-tiles{grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:9px}.launcher-tile{min-height:80px;padding:9px 5px}.launcher-tile .launch-icon{font-size:23px}.launcher-tile .launch-name{font-size:11px}
+.home-aside #homeUpcoming{min-height:170px}.home-aside-split{gap:11px}.calendar-top{margin:9px 0}.calendar-top strong{font-size:12px}.calendar-grid .cal-weekday{font-size:10px}.calendar-grid button{font-size:11px;padding:7px 0}
+.home-aside textarea{min-height:185px;font-size:12px}.ai-tile{min-height:88px;font-size:27px}.ai-tile small{font-size:11px}
+.home-primary>.compact-system{position:static;z-index:auto;left:auto;bottom:auto;width:auto;max-height:none;overflow:visible;padding:16px}.compact-system .section-heading h2{font-size:15px}.compact-system #stats{font-size:12px}.compact-system #openfolder{width:auto;padding:8px 12px;font-size:12px}
+@media(max-width:1450px){.home-workspace{grid-template-columns:minmax(0,1fr) minmax(320px,360px)}.quick-access .action-tiles{grid-template-columns:repeat(3,1fr)}.home-aside-split{grid-template-columns:1fr}.metric-icon{flex-basis:35px;height:35px}.metric-tile small{font-size:10px}}
+@media(max-width:1120px){.layout{grid-template-columns:185px minmax(0,1fr)}.home-workspace{grid-template-columns:1fr}.home-aside-split{grid-template-columns:1fr 1fr}.quick-access .action-tiles{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:780px){.layout{grid-template-columns:1fr}nav{position:relative;top:auto;height:auto;display:flex;overflow-x:auto;padding:7px}nav button{width:auto;flex:0 0 auto;white-space:nowrap}main{padding:12px}.dashboard-metrics{grid-template-columns:repeat(2,1fr)!important}.quick-access .action-tiles{grid-template-columns:repeat(3,1fr)}.home-two-col,.home-aside-split{grid-template-columns:1fr}.hero-motto{display:none}}
+@media(max-width:460px){.quick-access .action-tiles{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:25px}}
+</style></head><body><header><div><strong>⚡ ENGINEER PRO</strong> <span class="pill">v0.7.1</span></div><div class="header-tools"><input id="globalSearch" aria-label="Пошук у задачах, файлах і програмах" placeholder="⌕ Пошук… (Ctrl+K)" style="width:230px"><span id="clock"></span><button id="headerNewTask" title="Створити завдання">＋ Завдання</button><button id="headerApps" title="Мої програми">▦ Програми</button></div></header><div class="layout"><nav><button class="active" data-page="home">◈ Огляд</button><button data-page="ai">✦ AI HUB</button><button data-page="projects">▣ Проєкти й файли</button><button data-page="calc">∑ Електрокалькулятор</button><button data-page="tasks">☑ Завдання</button><button data-page="launchers">▦ Програми та папки</button><button data-page="norms">▤ Нормативні документи</button><button data-page="planner">▥ Календар робіт</button><button data-page="settings">⚙ Налаштування AI</button><div style="margin:30px 12px;color:#7d8794;font-size:12px">Локальна програма<br>Без телеметрії застосунку</div></nav><main><div id="searchResults" class="search-results" hidden></div>
+<section class="page active" id="home">
+<div class="home-workspace">
+ <div class="home-primary">
+  <div class="hero">
+   <div><span class="eyebrow">ІНЖЕНЕРНИЙ РОБОЧИЙ ПРОСТІР</span><h1>ENGINEER PRO</h1><p>Проєкти, розрахунки, кошториси, документи та AI в одному місці</p></div>
+   <div class="hero-motto">«Плануй.<br>Розраховуй. Будуй.»</div>
+  </div>
+  <div class="dashboard-metrics">
+   <div class="metric-tile"><span class="metric-icon blue">▤</span><div><small>Активні задачі</small><strong id="homeTaskCount">0</strong><span class="metric-sub" id="homeOverdue"></span></div></div>
+   <div class="metric-tile"><span class="metric-icon green">▣</span><div><small>Файли проєктів</small><strong id="homeFileCount">0</strong></div></div>
+   <div class="metric-tile"><span class="metric-icon violet">▦</span><div><small>Мої програми</small><strong id="homeAppCount">0</strong></div></div>
+   <div class="metric-tile"><span class="metric-icon orange">✓</span><div><small>Виконано задач</small><strong id="homeDoneCount">0</strong></div></div>
+  </div>
+  <div class="card quick-access"><div class="section-heading"><h2>Швидкий доступ</h2><button data-go="launchers">⚙ Налаштувати</button></div>
+   <div class="action-tiles">
+    <button class="action-tile amber" id="quickTask"><span>＋</span>Нова задача</button>
+    <button class="action-tile purple" data-go="ai"><span>✦</span>AI HUB</button>
+    <button class="action-tile sky" data-go="projects"><span>▣</span>Відкрити файл</button>
+    <button class="action-tile emerald" data-go="calc"><span>▦</span>Калькулятор</button>
+    <button class="action-tile coral" data-go="projects"><span>▤</span>Кошториси / КП</button>
+    <button class="action-tile cobalt" data-go="norms"><span>▥</span>Нормативи</button>
+   </div>
+  </div>
+  <div class="home-two-col">
+   <div class="card"><div class="section-heading"><h2>Останні проєкти</h2><button data-go="projects">Відкрити всі →</button></div><div id="homeRecent"></div></div>
+   <div class="card"><div class="section-heading"><h2>Останні файли</h2><button data-go="projects">Відкрити всі →</button></div><div id="homeFiles"></div></div>
+  </div>
+  <div class="card"><div class="section-heading"><h2>Програми та інструменти</h2><button data-go="launchers">Відкрити всі →</button></div><div id="homeLaunchers" class="launcher-tiles"></div></div>
+  <div class="card compact-system"><div class="section-heading"><h2>Система</h2><button id="refresh">Оновити</button></div><div id="stats">Завантаження…</div><button id="openfolder">Відкрити папку</button></div>
+ </div>
+ <aside class="home-aside">
+  <div class="card"><div class="section-heading"><h2>Сьогодні</h2><button class="primary" id="asideNewTask">＋ Нова задача</button></div><div id="homeUpcoming"></div><button class="aside-link" data-go="tasks">Усі задачі →</button></div>
+  <div class="home-aside-split">
+   <div class="card"><h2>Календар робіт</h2><div class="calendar-top"><button id="calPrev" aria-label="Попередній місяць">‹</button><strong id="calTitle"></strong><button id="calNext" aria-label="Наступний місяць">›</button></div><div id="homeCalendar" class="calendar-grid"></div><button class="aside-link" data-go="planner">Діаграма Ганта →</button></div>
+   <div class="card"><div class="section-heading"><h2>Нотатки</h2><button class="primary" id="saveNotes">Зберегти</button></div><textarea id="notes" placeholder="Ваші нотатки зберігаються локально"></textarea></div>
+  </div>
+  <div class="card"><div class="section-heading"><h2>AI HUB</h2><button data-go="ai">Відкрити →</button></div><div class="ai-tiles"><button data-go="ai" class="ai-tile teal">◎<small>AI помічник</small></button><button data-go="ai" class="ai-tile purple">✧<small>AI моделі</small></button><button data-go="ai" class="ai-tile amber">▤<small>Аналіз файлу</small></button></div></div>
+ </aside>
+</div></section>
+<section class="page" id="ai"><h1>ENGINEER AI HUB <span class="pill">v0.7.1</span></h1><p class="muted">Хмарні моделі та локальна Ollama. Запити передаються обраному провайдеру.</p><div class="card"><div class="row"><div><label>Провайдер</label><select id="provider"><option value="auto">Автоматично — безкоштовні по черзі</option><option value="ollama">Ollama (локально)</option><option value="openrouter">OpenRouter (безкоштовні моделі)</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Claude (Anthropic)</option></select></div><div><label>Ідентифікатор моделі</label><input id="model" placeholder="наприклад, llama3.2"></div></div><label style="display:block;margin:8px 0"><input type="checkbox" id="allowPaidAuto" style="width:auto"> Дозволити платні API в автоматичному режимі (можливі витрати)</label><p class="muted">Безкоштовний режим: Gemini → OpenRouter Free → локальна Ollama. Потрібні власні ключі Gemini/OpenRouter із доступом до безкоштовних тарифів. Ліміти провайдерів діють. Перемикання не обходить ліміти чи обмеження сервісів.</p><label>Діалог</label><div class="chat" id="chat"><div class="muted">Налаштуйте модель і введіть запит. Доступ до локальних файлів не передається автоматично.</div></div><label>Повідомлення</label><textarea id="prompt" placeholder="Поставте запитання або попросіть виконати інженерний розрахунок"></textarea><div class="row"><button class="primary" id="ask">Надіслати</button><button id="clearChat">Очистити діалог</button></div><div id="aiStatus" class="status"></div></div></section>
 <section class="page" id="projects"><h1>Проєкти та файли</h1><p class="muted">Відкривайте документи у встановлених програмах. Попередній перегляд XLSX/CSV/PDF і звірка текстових позицій. Для точного кошторисного аналізу потрібна перевірка інженером.</p><div class="card"><button class="primary" id="pick">Додати файли до списку</button><input id="fileSearch" placeholder="⌕ Пошук за назвою файлу"><div id="files"></div></div><div class="card"><h2>Аналіз документів (попередній)</h2><p class="muted">Оберіть два документи зі списку вище. Дані читаються локально. Підтримка XLSX/CSV і часткового тексту PDF; скановані PDF потребують OCR.</p><div class="row"><div><label>Кошторис / таблиця A</label><select id="docA"></select></div><div><label>Проєкт / таблиця B</label><select id="docB"></select></div></div><div class="row"><button class="primary" id="readDocs">Прочитати та зіставити</button><button id="exportCompare">Експорт результату CSV</button><button id="importEstimate">Імпорт кошторису АВК-5 (Excel)</button></div><div id="estimateStatus" class="status"></div><div id="estimatePreview" style="overflow:auto;max-height:380px"></div><div id="docStatus" class="status"></div><div id="docResult" style="max-height:470px;overflow:auto;margin-top:12px"></div></div></section>
 <section class="page" id="calc"><h1>Електротехнічний калькулятор</h1><p class="muted">Попередній розрахунок активної потужності або струму за заданими параметрами.</p><div class="card"><div class="grid"><div><label>Мережа</label><select id="phase"><option value="3">Трифазна</option><option value="1">Однофазна</option></select></div><div><label>Лінійна напруга (3ф) / напруга (1ф), В</label><input id="voltage" type="number" value="400" min="1"></div><div><label>Струм, А</label><input id="amps" type="number" value="100" min="0" step="any"></div><div><label>cos φ</label><input id="cos" type="number" value="0.9" min="0.01" max="1" step="any"></div><div><label>ККД η (для потужності на валу)</label><input id="eff" type="number" value="1" min="0.01" max="1" step="any"></div></div><p><button class="primary" id="calculate">Розрахувати</button></p><div id="result"></div></div><div class="card"><h2>Маса та довжина кабелю</h2><div class="row"><div><label>Загальна маса, кг</label><input id="mass" type="number" min="0" value="125"></div><div><label>Погонна маса, кг/м</label><input id="perMeter" type="number" min="0" value="2.5" step="any"></div></div><p><button id="cable" class="primary">Визначити довжину</button></p><div id="cableResult"></div></div></section>
 <section class="page" id="tasks"><h1>Мої завдання</h1><div class="card"><div class="task-entry"><input id="taskText" placeholder="Нове завдання"><input id="taskStart" type="date" title="Дата початку"><input id="taskDate" type="date" title="Дата завершення"><select id="taskPriority" title="Пріоритет"><option value="normal">Звичайний</option><option value="high">Високий</option><option value="low">Низький</option></select><button class="primary" id="addTask">Додати</button></div><div class="row task-controls"><input id="taskSearch" placeholder="Пошук завдань"><select id="taskFilter"><option value="all">Усі</option><option value="open">Активні</option><option value="done">Виконані</option><option value="overdue">Прострочені</option></select><select id="taskSort"><option value="due">За строком</option><option value="priority">За пріоритетом</option><option value="newest">Нові спочатку</option></select></div><div id="taskList"></div><div id="summary" class="muted"></div></div></section>
@@ -139,6 +413,35 @@ function runGlobalSearch(){
 search.addEventListener('input',runGlobalSearch);
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();search.focus();search.select()}if(e.key==='Escape'){results.hidden=true;search.blur()}});
 document.addEventListener('click',e=>{if(e.target!==search&&!results.contains(e.target))results.hidden=true});
+
+// Dashboard navigation uses delegation because its controls are dynamic.
+document.getElementById('home').addEventListener('click',e=>{
+ const target=e.target.closest('[data-go]');
+ if(target)go(target.dataset.go);
+});
+$('quickTask').onclick=$('asideNewTask').onclick=()=>{go('tasks');$('taskText').focus()};
+let calendarOffset=0;
+function renderHomeCalendar(){
+ const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+calendarOffset);
+ const y=d.getFullYear(),m=d.getMonth();
+ $('calTitle').textContent=d.toLocaleDateString('uk-UA',{month:'long',year:'numeric'});
+ const grid=$('homeCalendar');grid.replaceChildren();
+ for(const w of ['Пн','Вт','Ср','Чт','Пт','Сб','Нд']){const label=document.createElement('span');label.className='cal-weekday';label.textContent=w;grid.append(label)}
+ const start=(new Date(y,m,1).getDay()+6)%7;
+ for(let i=0;i<start;i++)grid.append(document.createElement('span'));
+ const today=new Date(),count=new Date(y,m+1,0).getDate();
+ for(let day=1;day<=count;day++){
+  const btn=document.createElement('button');btn.textContent=day;
+  const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  if(y===today.getFullYear()&&m===today.getMonth()&&day===today.getDate())btn.classList.add('today');
+  if((state.tasks||[]).some(t=>t.due===iso&&!t.done))btn.classList.add('has-task');
+  btn.title=iso;btn.onclick=()=>{go('tasks');$('taskFilter').value='all';renderTasks()};
+  grid.append(btn);
+ }
+}
+$('calPrev').onclick=()=>{calendarOffset--;renderHomeCalendar()};
+$('calNext').onclick=()=>{calendarOffset++;renderHomeCalendar()};
+
 function renderDashboard(){
  const tasks=state.tasks||[],projects=state.projects||[];
  $('homeTaskCount').textContent=tasks.filter(t=>!t.done).length;
@@ -152,9 +455,13 @@ function renderDashboard(){
  const open=tasks.filter(t=>!t.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')).slice(0,6);
  if(!open.length)upcoming.textContent='Немає відкритих задач';
  for(const t of open){const d=document.createElement('div');d.className='dash-line';const title=document.createElement('span');title.textContent=t.text;const due=document.createElement('span');due.className='secondary';due.textContent=t.due||'Без строку';d.append(title,due);upcoming.append(d)}
- const recent=$('homeRecent');recent.replaceChildren();
- if(!projects.length)recent.textContent='Ще не додано файлів';
- for(const f of projects.slice(-6).reverse()){const b=document.createElement('button');b.className='dash-line';b.style.cssText='width:100%;background:transparent;border:0;text-align:left';b.textContent='▤ '+(f.name||f.path.split(/[\\/]/).pop());b.onclick=()=>window.engineer.open(f.path).catch(e=>alert(e.message));recent.append(b)}
+ const recent=$('homeRecent');recent.replaceChildren();const homeFiles=$('homeFiles');homeFiles.replaceChildren();
+ if(!projects.length){recent.textContent='Ще не додано проєктів';homeFiles.textContent='Ще не додано файлів'};
+ for(const f of projects.slice(-6).reverse()){const b=document.createElement('button');b.className='dash-line';b.style.cssText='width:100%;background:transparent;border:0;text-align:left';b.textContent='▤ '+(f.name||f.path.split(/[\\/]/).pop());b.onclick=()=>window.engineer.open(f.path).catch(e=>alert(e.message));homeFiles.append(b)}
+ const folders=[...new Set(projects.map(f=>f.path.replace(/[\\\\/][^\\\\/]*$/,'')))].slice(-5).reverse();
+ for(const folder of folders){const b=document.createElement('button');b.className='dash-line';b.style.cssText='width:100%;background:transparent;border:0;text-align:left';b.textContent='▣ '+folder.split(/[\\\\/]/).pop();b.onclick=()=>go('projects');recent.append(b)}
+ $('homeOverdue').textContent=tasks.filter(t=>!t.done&&t.due&&t.due<new Date().toISOString().slice(0,10)).length+' прострочені';
+ renderHomeCalendar();
  const planner=$('plannerList');planner.replaceChildren();
  for(const t of tasks.filter(x=>x.due).sort((a,b)=>a.due.localeCompare(b.due))){const line=document.createElement('div');line.className='dash-line';const txt=document.createElement('span');txt.textContent=(t.done?'✓ ':'○ ')+t.text;const due=document.createElement('span');due.className='secondary';due.textContent=(t.start?t.start+' → ':'')+t.due;line.append(txt,due);planner.append(line)}
  if(!planner.childNodes.length)planner.textContent='Додайте строк виконання у розділі «Завдання».';
