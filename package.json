@@ -1,6 +1,6 @@
 {
   "name": "engineer-pro",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "private": true,
   "description": "ENGINEER PRO desktop with free-provider fallback and GitHub auto-updates",
   "main": "main.js",

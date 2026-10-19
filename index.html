@@ -297,7 +297,74 @@ main{padding:17px 19px}
 @media(max-width:1120px){.layout{grid-template-columns:185px minmax(0,1fr)}.home-workspace{grid-template-columns:1fr}.home-aside-split{grid-template-columns:1fr 1fr}.quick-access .action-tiles{grid-template-columns:repeat(6,1fr)}}
 @media(max-width:780px){.layout{grid-template-columns:1fr}nav{position:relative;top:auto;height:auto;display:flex;overflow-x:auto;padding:7px}nav button{width:auto;flex:0 0 auto;white-space:nowrap}main{padding:12px}.dashboard-metrics{grid-template-columns:repeat(2,1fr)!important}.quick-access .action-tiles{grid-template-columns:repeat(3,1fr)}.home-two-col,.home-aside-split{grid-template-columns:1fr}.hero-motto{display:none}}
 @media(max-width:460px){.quick-access .action-tiles{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:25px}}
-</style></head><body><header><div><strong>⚡ ENGINEER PRO</strong> <span class="pill">v0.7.1</span></div><div class="header-tools"><input id="globalSearch" aria-label="Пошук у задачах, файлах і програмах" placeholder="⌕ Пошук… (Ctrl+K)" style="width:230px"><span id="clock"></span><button id="headerNewTask" title="Створити завдання">＋ Завдання</button><button id="headerApps" title="Мої програми">▦ Програми</button></div></header><div class="layout"><nav><button class="active" data-page="home">◈ Огляд</button><button data-page="ai">✦ AI HUB</button><button data-page="projects">▣ Проєкти й файли</button><button data-page="calc">∑ Електрокалькулятор</button><button data-page="tasks">☑ Завдання</button><button data-page="launchers">▦ Програми та папки</button><button data-page="norms">▤ Нормативні документи</button><button data-page="planner">▥ Календар робіт</button><button data-page="settings">⚙ Налаштування AI</button><div style="margin:30px 12px;color:#7d8794;font-size:12px">Локальна програма<br>Без телеметрії застосунку</div></nav><main><div id="searchResults" class="search-results" hidden></div>
+
+/* ENGINEER PRO 0.7.2 — compact dashboard; all rules scoped to home */
+#home .home-workspace{grid-template-columns:minmax(0,1.88fr) minmax(330px,.92fr);gap:13px}
+#home .home-primary,#home .home-aside{gap:11px}
+#home .card,#home .home-aside .card{padding:14px;border-radius:12px}
+#home .hero{height:137px;min-height:137px;padding:18px 23px}
+#home .hero h1{font-size:29px;margin:4px 0}
+#home .hero p{font-size:12px}
+#home .hero-motto{font-size:12px}
+#home .dashboard-metrics{gap:8px}
+#home .metric-tile{min-height:76px;padding:10px;gap:9px}
+#home .metric-icon{flex:0 0 42px;height:42px;font-size:22px}
+#home .metric-tile strong{font-size:25px;margin-top:0}
+#home .section-heading{margin-bottom:8px}
+#home .section-heading h2{font-size:14px}
+#home .quick-access .action-tiles{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+#home .action-tile{min-height:82px;padding:7px 3px;gap:5px;font-size:11px}
+#home .action-tile span{width:35px;height:35px;font-size:21px}
+#home .home-two-col{gap:11px}
+#home .home-two-col .card{min-height:0;height:230px;overflow:hidden}
+#home .recent-projects-card #homeRecent,#home .recent-files-card #homeFiles{max-height:177px;overflow:auto;scrollbar-width:thin}
+#home .dash-line{min-height:28px;font-size:11px;padding:5px 4px;overflow:hidden;text-overflow:ellipsis}
+#home #homeRecent .dash-line,#home #homeFiles .dash-line{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#home .home-programs-card .launcher-tiles{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+#home .home-programs-card .launcher-tile{min-height:73px;padding:9px 8px;border-radius:9px}
+#home .home-programs-card .launch-icon{font-size:24px}
+#home .home-programs-card .launch-name{font-size:11px}
+#home .today-card #homeUpcoming{min-height:0;max-height:155px;overflow:auto}
+#home .today-card{min-height:112px}
+#home .today-card .dash-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#home .today-card .dash-line span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#home .today-card .dash-line .secondary{flex-shrink:0}
+#home .today-card .aside-link{display:inline-block;margin-top:5px}
+#home .home-aside-split{display:grid;grid-template-columns:1fr;gap:11px}
+#home .calendar-card{min-height:0}
+#home .calendar-top{max-width:100%;margin:8px 0}
+#home .calendar-grid{max-width:440px;gap:2px}
+#home .calendar-grid button{padding:5px 0;font-size:12px}
+#home .calendar-grid .cal-weekday{font-size:11px}
+#home .notes-card textarea{min-height:90px;max-height:150px;resize:vertical}
+#home .ai-hub-caption{font-size:11px;color:#9bb3c7;margin:0 0 10px}
+#home .ai-tiles{gap:8px}
+#home .ai-tile{min-height:72px;font-size:24px}
+#home .ai-tile small{font-size:10px}
+#home .compact-system{padding:12px 14px}
+#home .compact-system #stats{font-size:11px}
+@media(max-width:1450px){
+ #home .home-workspace{grid-template-columns:minmax(0,1fr) minmax(300px,340px)}
+ #home .quick-access .action-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #home .metric-icon{flex-basis:34px;height:34px}
+ #home .metric-tile small{font-size:10px}
+}
+@media(max-width:1130px){
+ #home .home-workspace{grid-template-columns:1fr}
+ #home .home-aside-split{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #home .quick-access .action-tiles{grid-template-columns:repeat(6,minmax(0,1fr))}
+ #home .calendar-grid{max-width:none}
+}
+@media(max-width:780px){
+ #home .dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #home .quick-access .action-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #home .home-two-col,#home .home-aside-split{grid-template-columns:1fr}
+ #home .hero{height:auto;min-height:120px}
+}
+@media(max-width:440px){
+ #home .quick-access .action-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style></head><body><header><div><strong>⚡ ENGINEER PRO</strong> <span class="pill">v0.7.2</span></div><div class="header-tools"><input id="globalSearch" aria-label="Пошук у задачах, файлах і програмах" placeholder="⌕ Пошук… (Ctrl+K)" style="width:230px"><span id="clock"></span><button id="headerNewTask" title="Створити завдання">＋ Завдання</button><button id="headerApps" title="Мої програми">▦ Програми</button></div></header><div class="layout"><nav><button class="active" data-page="home">◈ Огляд</button><button data-page="ai">✦ AI HUB</button><button data-page="projects">▣ Проєкти й файли</button><button data-page="calc">∑ Електрокалькулятор</button><button data-page="tasks">☑ Завдання</button><button data-page="launchers">▦ Програми та папки</button><button data-page="norms">▤ Нормативні документи</button><button data-page="planner">▥ Календар робіт</button><button data-page="settings">⚙ Налаштування AI</button><div style="margin:30px 12px;color:#7d8794;font-size:12px">Локальна програма<br>Без телеметрії застосунку</div></nav><main><div id="searchResults" class="search-results" hidden></div>
 <section class="page active" id="home">
 <div class="home-workspace">
  <div class="home-primary">
@@ -322,22 +389,22 @@ main{padding:17px 19px}
    </div>
   </div>
   <div class="home-two-col">
-   <div class="card"><div class="section-heading"><h2>Останні проєкти</h2><button data-go="projects">Відкрити всі →</button></div><div id="homeRecent"></div></div>
-   <div class="card"><div class="section-heading"><h2>Останні файли</h2><button data-go="projects">Відкрити всі →</button></div><div id="homeFiles"></div></div>
+   <div class="card recent-projects-card"><div class="section-heading"><h2>Останні проєкти</h2><button data-go="projects">Відкрити всі →</button></div><div id="homeRecent"></div></div>
+   <div class="card recent-files-card"><div class="section-heading"><h2>Останні файли</h2><button data-go="projects">Відкрити всі →</button></div><div id="homeFiles"></div></div>
   </div>
-  <div class="card"><div class="section-heading"><h2>Програми та інструменти</h2><button data-go="launchers">Відкрити всі →</button></div><div id="homeLaunchers" class="launcher-tiles"></div></div>
+  <div class="card home-programs-card"><div class="section-heading"><h2>Програми та інструменти</h2><button data-go="launchers">Відкрити всі →</button></div><div id="homeLaunchers" class="launcher-tiles"></div></div>
   <div class="card compact-system"><div class="section-heading"><h2>Система</h2><button id="refresh">Оновити</button></div><div id="stats">Завантаження…</div><button id="openfolder">Відкрити папку</button></div>
  </div>
  <aside class="home-aside">
-  <div class="card"><div class="section-heading"><h2>Сьогодні</h2><button class="primary" id="asideNewTask">＋ Нова задача</button></div><div id="homeUpcoming"></div><button class="aside-link" data-go="tasks">Усі задачі →</button></div>
+  <div class="card today-card"><div class="section-heading"><h2>Сьогодні</h2><button class="primary" id="asideNewTask">＋ Нова задача</button></div><div id="homeUpcoming"></div><button class="aside-link" data-go="tasks">Усі задачі →</button></div>
   <div class="home-aside-split">
-   <div class="card"><h2>Календар робіт</h2><div class="calendar-top"><button id="calPrev" aria-label="Попередній місяць">‹</button><strong id="calTitle"></strong><button id="calNext" aria-label="Наступний місяць">›</button></div><div id="homeCalendar" class="calendar-grid"></div><button class="aside-link" data-go="planner">Діаграма Ганта →</button></div>
-   <div class="card"><div class="section-heading"><h2>Нотатки</h2><button class="primary" id="saveNotes">Зберегти</button></div><textarea id="notes" placeholder="Ваші нотатки зберігаються локально"></textarea></div>
+   <div class="card calendar-card"><h2>Календар робіт</h2><div class="calendar-top"><button id="calPrev" aria-label="Попередній місяць">‹</button><strong id="calTitle"></strong><button id="calNext" aria-label="Наступний місяць">›</button></div><div id="homeCalendar" class="calendar-grid"></div><button class="aside-link" data-go="planner">Діаграма Ганта →</button></div>
+   <div class="card notes-card"><div class="section-heading"><h2>Нотатки</h2><button class="primary" id="saveNotes">Зберегти</button></div><textarea id="notes" placeholder="Ваші нотатки зберігаються локально"></textarea></div>
   </div>
-  <div class="card"><div class="section-heading"><h2>AI HUB</h2><button data-go="ai">Відкрити →</button></div><div class="ai-tiles"><button data-go="ai" class="ai-tile teal">◎<small>AI помічник</small></button><button data-go="ai" class="ai-tile purple">✧<small>AI моделі</small></button><button data-go="ai" class="ai-tile amber">▤<small>Аналіз файлу</small></button></div></div>
+  <div class="card ai-card"><div class="section-heading"><h2>AI HUB</h2><button data-go="ai">Відкрити →</button></div><p class="ai-hub-caption">Помічник для аналізу документів, кошторисів і технічних питань</p><div class="ai-tiles"><button data-go="ai" class="ai-tile teal">◎<small>AI помічник</small></button><button data-go="ai" class="ai-tile purple">✧<small>AI моделі</small></button><button data-go="ai" class="ai-tile amber">▤<small>Аналіз файлу</small></button></div></div>
  </aside>
 </div></section>
-<section class="page" id="ai"><h1>ENGINEER AI HUB <span class="pill">v0.7.1</span></h1><p class="muted">Хмарні моделі та локальна Ollama. Запити передаються обраному провайдеру.</p><div class="card"><div class="row"><div><label>Провайдер</label><select id="provider"><option value="auto">Автоматично — безкоштовні по черзі</option><option value="ollama">Ollama (локально)</option><option value="openrouter">OpenRouter (безкоштовні моделі)</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Claude (Anthropic)</option></select></div><div><label>Ідентифікатор моделі</label><input id="model" placeholder="наприклад, llama3.2"></div></div><label style="display:block;margin:8px 0"><input type="checkbox" id="allowPaidAuto" style="width:auto"> Дозволити платні API в автоматичному режимі (можливі витрати)</label><p class="muted">Безкоштовний режим: Gemini → OpenRouter Free → локальна Ollama. Потрібні власні ключі Gemini/OpenRouter із доступом до безкоштовних тарифів. Ліміти провайдерів діють. Перемикання не обходить ліміти чи обмеження сервісів.</p><label>Діалог</label><div class="chat" id="chat"><div class="muted">Налаштуйте модель і введіть запит. Доступ до локальних файлів не передається автоматично.</div></div><label>Повідомлення</label><textarea id="prompt" placeholder="Поставте запитання або попросіть виконати інженерний розрахунок"></textarea><div class="row"><button class="primary" id="ask">Надіслати</button><button id="clearChat">Очистити діалог</button></div><div id="aiStatus" class="status"></div></div></section>
+<section class="page" id="ai"><h1>ENGINEER AI HUB <span class="pill">v0.7.2</span></h1><p class="muted">Хмарні моделі та локальна Ollama. Запити передаються обраному провайдеру.</p><div class="card"><div class="row"><div><label>Провайдер</label><select id="provider"><option value="auto">Автоматично — безкоштовні по черзі</option><option value="ollama">Ollama (локально)</option><option value="openrouter">OpenRouter (безкоштовні моделі)</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Claude (Anthropic)</option></select></div><div><label>Ідентифікатор моделі</label><input id="model" placeholder="наприклад, llama3.2"></div></div><label style="display:block;margin:8px 0"><input type="checkbox" id="allowPaidAuto" style="width:auto"> Дозволити платні API в автоматичному режимі (можливі витрати)</label><p class="muted">Безкоштовний режим: Gemini → OpenRouter Free → локальна Ollama. Потрібні власні ключі Gemini/OpenRouter із доступом до безкоштовних тарифів. Ліміти провайдерів діють. Перемикання не обходить ліміти чи обмеження сервісів.</p><label>Діалог</label><div class="chat" id="chat"><div class="muted">Налаштуйте модель і введіть запит. Доступ до локальних файлів не передається автоматично.</div></div><label>Повідомлення</label><textarea id="prompt" placeholder="Поставте запитання або попросіть виконати інженерний розрахунок"></textarea><div class="row"><button class="primary" id="ask">Надіслати</button><button id="clearChat">Очистити діалог</button></div><div id="aiStatus" class="status"></div></div></section>
 <section class="page" id="projects"><h1>Проєкти та файли</h1><p class="muted">Відкривайте документи у встановлених програмах. Попередній перегляд XLSX/CSV/PDF і звірка текстових позицій. Для точного кошторисного аналізу потрібна перевірка інженером.</p><div class="card"><button class="primary" id="pick">Додати файли до списку</button><input id="fileSearch" placeholder="⌕ Пошук за назвою файлу"><div id="files"></div></div><div class="card"><h2>Аналіз документів (попередній)</h2><p class="muted">Оберіть два документи зі списку вище. Дані читаються локально. Підтримка XLSX/CSV і часткового тексту PDF; скановані PDF потребують OCR.</p><div class="row"><div><label>Кошторис / таблиця A</label><select id="docA"></select></div><div><label>Проєкт / таблиця B</label><select id="docB"></select></div></div><div class="row"><button class="primary" id="readDocs">Прочитати та зіставити</button><button id="exportCompare">Експорт результату CSV</button><button id="importEstimate">Імпорт кошторису АВК-5 (Excel)</button></div><div id="estimateStatus" class="status"></div><div id="estimatePreview" style="overflow:auto;max-height:380px"></div><div id="docStatus" class="status"></div><div id="docResult" style="max-height:470px;overflow:auto;margin-top:12px"></div></div></section>
 <section class="page" id="calc"><h1>Електротехнічний калькулятор</h1><p class="muted">Попередній розрахунок активної потужності або струму за заданими параметрами.</p><div class="card"><div class="grid"><div><label>Мережа</label><select id="phase"><option value="3">Трифазна</option><option value="1">Однофазна</option></select></div><div><label>Лінійна напруга (3ф) / напруга (1ф), В</label><input id="voltage" type="number" value="400" min="1"></div><div><label>Струм, А</label><input id="amps" type="number" value="100" min="0" step="any"></div><div><label>cos φ</label><input id="cos" type="number" value="0.9" min="0.01" max="1" step="any"></div><div><label>ККД η (для потужності на валу)</label><input id="eff" type="number" value="1" min="0.01" max="1" step="any"></div></div><p><button class="primary" id="calculate">Розрахувати</button></p><div id="result"></div></div><div class="card"><h2>Маса та довжина кабелю</h2><div class="row"><div><label>Загальна маса, кг</label><input id="mass" type="number" min="0" value="125"></div><div><label>Погонна маса, кг/м</label><input id="perMeter" type="number" min="0" value="2.5" step="any"></div></div><p><button id="cable" class="primary">Визначити довжину</button></p><div id="cableResult"></div></div></section>
 <section class="page" id="tasks"><h1>Мої завдання</h1><div class="card"><div class="task-entry"><input id="taskText" placeholder="Нове завдання"><input id="taskStart" type="date" title="Дата початку"><input id="taskDate" type="date" title="Дата завершення"><select id="taskPriority" title="Пріоритет"><option value="normal">Звичайний</option><option value="high">Високий</option><option value="low">Низький</option></select><button class="primary" id="addTask">Додати</button></div><div class="row task-controls"><input id="taskSearch" placeholder="Пошук завдань"><select id="taskFilter"><option value="all">Усі</option><option value="open">Активні</option><option value="done">Виконані</option><option value="overdue">Прострочені</option></select><select id="taskSort"><option value="due">За строком</option><option value="priority">За пріоритетом</option><option value="newest">Нові спочатку</option></select></div><div id="taskList"></div><div id="summary" class="muted"></div></div></section>
