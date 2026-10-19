@@ -1,0 +1,76 @@
+name: ENGINEER PRO 1.0 - EXE and APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  windows-exe:
+    name: Windows EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check JavaScript and regressions
+        run: |
+          npm run check
+          node test-compare.js
+          node test-specification.js
+          node test-pdf-enhanced.js
+      - name: Build EXE
+        run: npm run dist -- --publish never
+      - name: Verify packaged Electron modules
+        shell: pwsh
+        run: |
+          $asar = Get-ChildItem -Path dist -Filter app.asar -Recurse | Select-Object -First 1
+          if (-not $asar) { throw 'app.asar not found' }
+          $entries = npx --yes @electron/asar list $asar.FullName
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect app.asar' }
+          foreach ($file in @('/main.js', '/shared/sync.js', '/sync.html', '/preload.js')) {
+            if ($entries -notcontains $file) { throw "Missing packaged module: $file" }
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ENGINEER-PRO-Windows-EXE
+          path: dist/*.exe
+          if-no-files-found: error
+
+  android-apk:
+    name: Android debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android dependencies
+        working-directory: android
+        run: npm install --no-audit --no-fund
+      - name: Generate Android project
+        working-directory: android
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Build debug APK
+        working-directory: android/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ENGINEER-PRO-Android-APK
+          path: android/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
