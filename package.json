@@ -20,19 +20,15 @@
       "output": "dist"
     },
     "files": [
-      "main.js",
-      "document-reader.js",
-      "preload.js",
-      "index.html",
-      "package.json",
-      "update-config.json",
-      "compare-engine.js",
-      "estimate-importer.js",
-      "sunset-tower.png",
-      "specification-analyzer.js",
-      "pdf-enhanced.js",
-      "shared/**/*",
-      "sync.html"
+      "**/*",
+      "!dist/**",
+      "!android/**",
+      "!.github/**",
+      "!test-*.js",
+      "!README*.md",
+      "!BUILD_FIX*.md",
+      "!START_HERE*.md",
+      "!node_modules/.cache/**"
     ],
     "win": {
       "target": [
