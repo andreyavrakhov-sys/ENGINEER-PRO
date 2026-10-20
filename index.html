@@ -399,7 +399,7 @@ main{padding:17px 19px}
 .compare-discrepancy{background:rgba(240,163,53,.065)}
 .compare-discrepancy:hover{background:rgba(240,163,53,.13)}
 .spec-card{margin-top:14px}.spec-result{overflow:auto;max-height:460px;margin-top:10px}.spec-result table{min-width:1200px}.spec-result td{max-width:350px;overflow-wrap:anywhere}
-.spec-ocr-option{display:flex;align-items:center;gap:8px;font-size:12px;color:#b7d5e6;padding:7px 4px}.spec-ocr-option input{accent-color:#ffbb43;width:17px;height:17px}</style></head><body><header><div><strong>⚡ ENGINEER PRO</strong> <span class="pill">v0.9.2</span></div><div class="header-tools"><input id="globalSearch" aria-label="Пошук у задачах, файлах і програмах" placeholder="⌕ Пошук… (Ctrl+K)" style="width:230px"><span id="clock"></span><button id="headerNewTask" title="Створити завдання">＋ Завдання</button><button id="headerApps" title="Мої програми">▦ Програми</button></div></header><div class="layout"><nav><button class="active" data-page="home">◈ Огляд</button><button data-page="ai">✦ AI HUB</button><button data-page="projects">▣ Проєкти й файли</button><button data-page="calc">∑ Електрокалькулятор</button><button data-page="tasks">☑ Завдання</button><button data-page="launchers">▦ Програми та папки</button><button data-page="norms">▤ Нормативні документи</button><button data-page="planner">▥ Календар робіт</button><button data-page="settings">⚙ Налаштування AI</button><div style="margin:30px 12px;color:#7d8794;font-size:12px">Локальна програма<br>Без телеметрії застосунку</div></nav><main><div id="searchResults" class="search-results" hidden></div>
+.spec-ocr-option{display:flex;align-items:center;gap:8px;font-size:12px;color:#b7d5e6;padding:7px 4px}.spec-ocr-option input{accent-color:#ffbb43;width:17px;height:17px}</style></head><body><header><div><strong>⚡ ENGINEER PRO</strong> <span class="pill">v0.9.3</span></div><div class="header-tools"><input id="globalSearch" aria-label="Пошук у задачах, файлах і програмах" placeholder="⌕ Пошук… (Ctrl+K)" style="width:230px"><span id="clock"></span><button id="headerNewTask" title="Створити завдання">＋ Завдання</button><button id="headerApps" title="Мої програми">▦ Програми</button></div></header><div class="layout"><nav><button class="active" data-page="home">◈ Огляд</button><button data-page="ai">✦ AI HUB</button><button data-page="projects">▣ Проєкти й файли</button><button data-page="calc">∑ Електрокалькулятор</button><button data-page="tasks">☑ Завдання</button><button data-page="launchers">▦ Програми та папки</button><button data-page="norms">▤ Нормативні документи</button><button data-page="planner">▥ Календар робіт</button><button data-page="settings">⚙ Налаштування AI</button><div style="margin:30px 12px;color:#7d8794;font-size:12px">Локальна програма<br>Без телеметрії застосунку</div></nav><main><div id="searchResults" class="search-results" hidden></div>
 <section class="page active" id="home">
 <div class="home-workspace">
  <div class="home-primary">
@@ -439,7 +439,7 @@ main{padding:17px 19px}
   <div class="card ai-card"><div class="section-heading"><h2>AI HUB</h2><button data-go="ai">Відкрити →</button></div><p class="ai-hub-caption">Помічник для аналізу документів, кошторисів і технічних питань</p><div class="ai-tiles"><button data-go="ai" class="ai-tile teal">◎<small>AI помічник</small></button><button data-go="ai" class="ai-tile purple">✧<small>AI моделі</small></button><button data-go="ai" class="ai-tile amber">▤<small>Аналіз файлу</small></button></div></div>
  </aside>
 </div></section>
-<section class="page" id="ai"><h1>ENGINEER AI HUB <span class="pill">v0.9.2</span></h1><p class="muted">Хмарні моделі та локальна Ollama. Запити передаються обраному провайдеру.</p><div class="card"><div class="row"><div><label>Провайдер</label><select id="provider"><option value="auto">Автоматично — безкоштовні по черзі</option><option value="ollama">Ollama (локально)</option><option value="openrouter">OpenRouter (безкоштовні моделі)</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Claude (Anthropic)</option></select></div><div><label>Ідентифікатор моделі</label><input id="model" placeholder="наприклад, llama3.2"></div></div><label style="display:block;margin:8px 0"><input type="checkbox" id="allowPaidAuto" style="width:auto"> Дозволити платні API в автоматичному режимі (можливі витрати)</label><p class="muted">Безкоштовний режим: Gemini → OpenRouter Free → локальна Ollama. Потрібні власні ключі Gemini/OpenRouter із доступом до безкоштовних тарифів. Ліміти провайдерів діють. Перемикання не обходить ліміти чи обмеження сервісів.</p><label>Діалог</label><div class="chat" id="chat"><div class="muted">Налаштуйте модель і введіть запит. Доступ до локальних файлів не передається автоматично.</div></div><label>Повідомлення</label><textarea id="prompt" placeholder="Поставте запитання або попросіть виконати інженерний розрахунок"></textarea><div class="row"><button class="primary" id="ask">Надіслати</button><button id="clearChat">Очистити діалог</button></div><div id="aiStatus" class="status"></div></div></section>
+<section class="page" id="ai"><h1>ENGINEER AI HUB <span class="pill">v0.9.3</span></h1><p class="muted">Хмарні моделі та локальна Ollama. Запити передаються обраному провайдеру.</p><div class="card"><div class="row"><div><label>Провайдер</label><select id="provider"><option value="auto">Автоматично — безкоштовні по черзі</option><option value="ollama">Ollama (локально)</option><option value="openrouter">OpenRouter (безкоштовні моделі)</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option><option value="anthropic">Claude (Anthropic)</option></select></div><div><label>Ідентифікатор моделі</label><input id="model" placeholder="наприклад, llama3.2"></div></div><label style="display:block;margin:8px 0"><input type="checkbox" id="allowPaidAuto" style="width:auto"> Дозволити платні API в автоматичному режимі (можливі витрати)</label><p class="muted">Безкоштовний режим: Gemini → OpenRouter Free → локальна Ollama. Потрібні власні ключі Gemini/OpenRouter із доступом до безкоштовних тарифів. Ліміти провайдерів діють. Перемикання не обходить ліміти чи обмеження сервісів.</p><label>Діалог</label><div class="chat" id="chat"><div class="muted">Налаштуйте модель і введіть запит. Доступ до локальних файлів не передається автоматично.</div></div><label>Повідомлення</label><textarea id="prompt" placeholder="Поставте запитання або попросіть виконати інженерний розрахунок"></textarea><div class="row"><button class="primary" id="ask">Надіслати</button><button id="clearChat">Очистити діалог</button></div><div id="aiStatus" class="status"></div></div></section>
 <section class="page" id="projects"><h1>Проєкти та файли</h1><p class="muted">Відкривайте документи у встановлених програмах. Попередній перегляд XLSX/CSV/PDF і звірка текстових позицій. Для точного кошторисного аналізу потрібна перевірка інженером.</p><div class="card project-manager">
  <div class="section-heading"><h2>Менеджер інженерних проєктів</h2></div>
  <div class="row project-entry"><input id="newProjectName" placeholder="Назва об’єкта / проєкту"><select id="newProjectStatus"><option value="active">У роботі</option><option value="planned">Заплановано</option><option value="completed">Завершено</option></select><button id="createProject" class="primary">＋ Створити проєкт</button></div>
@@ -586,9 +586,20 @@ $('readSpecification').onclick=async()=>{
 };
 $('compareSpecification').onclick=async()=>{
  if(!activeSpec){$('specStatus').textContent='Спочатку зчитайте специфікацію';return}
- if(!importedEstimate?.items?.length){$('specStatus').textContent='Спочатку імпортуйте кошторис Excel із поля A кнопкою «Імпорт кошторису АВК-5»';return}
  const button=$('compareSpecification');button.disabled=true;
- try{const report=await window.engineer.compareSpecification(activeSpec,importedEstimate);specRows=report.rows;
+ try{
+  if(!importedEstimate?.items?.length){
+   const selected=state.projects[Number($('docA').value)];
+   if(!selected?.path)throw Error('Оберіть файл кошторису Excel у полі A');
+   $('specStatus').textContent='Автоматично імпортуємо кошторис A…';
+   const result=await window.engineer.importEstimate(selected.path);
+   if(!result?.items?.length)throw Error('У файлі A не знайдено позицій кошторису');
+   importedEstimate=result;window.lastEstimateImport=result;
+   $('exportEstimate').disabled=false;
+   $('estimateStatus').textContent=`Імпортовано ${result.items.length} позицій кошторису автоматично`;
+  }
+  $('specStatus').textContent='Зіставляємо специфікацію з кошторисом…';
+  const report=await window.engineer.compareSpecification(activeSpec,importedEstimate);specRows=report.rows;
   $('specStatus').textContent=`Позицій: ${report.summary.spec}; точних текстових збігів: ${report.summary.matched}; на перевірку: ${report.summary.review}. Не зіставлено позицій кошторису: ${report.summary.unmatchedEstimate}. Це не означає, що вони зайві. Усі висновки потребують перевірки.`;
   $('exportSpecification').disabled=!specRows.length;$('exportSpecificationXlsx').disabled=!specRows.length;renderSpecRows(specRows);
  }catch(e){$('specStatus').textContent='Помилка звірки: '+e.message}finally{button.disabled=false}
@@ -602,7 +613,7 @@ function renderSpecRows(rows){const root=$('specResult');root.replaceChildren();
 $('exportSpecification').onclick=()=>{if(!specRows.length)return;
  const keys=['sourceFile','sourceMethod','name','qtySpec','unitSpec','qtyEstimate','unitEstimate','diff','status','page','sheet','line','estimateSheet','estimateLine','estimateCode','source','review','suggestedMatches'];
  const headers=['Файл джерела','Метод читання','Найменування','За проєктом','Од. проєкту','За кошторисом','Од. кошторису','Різниця (перерахована)','Статус','Сторінка PDF','Аркуш','Рядок специфікації','Аркуш кошторису','Рядок кошторису','Шифр','Вихідний текст','Примітка','Можливі відповідники'];
- exportCSV('ENGINEER_PRO_специфікація_розбіжності_0.9.1.csv',headers,specRows.map(r=>keys.map(k=>r[k]??'')));
+ exportCSV('ENGINEER_PRO_специфікація_розбіжності_0.9.3.csv',headers,specRows.map(r=>keys.map(k=>r[k]??'')));
 };
 $('exportSpecificationXlsx').onclick=async()=>{
  if(!specRows.length)return;const button=$('exportSpecificationXlsx');button.disabled=true;
@@ -615,7 +626,7 @@ $('exportSpecificationXlsx').onclick=async()=>{
 $('exportEstimate').onclick=()=>{
  if(!importedEstimate?.items?.length)return;
  const keys=['sheet','estimate','section','line','number','code','basis','name','unit','qty','unitPrice','total','coefficients','kind'];
- exportCSV('ENGINEER_PRO_позиції_кошторису_0.9.1.csv',keys,importedEstimate.items.map(item=>keys.map(k=>Array.isArray(item[k])?item[k].join(' | '):item[k]??'')));
+ exportCSV('ENGINEER_PRO_позиції_кошторису_0.9.3.csv',keys,importedEstimate.items.map(item=>keys.map(k=>Array.isArray(item[k])?item[k].join(' | '):item[k]??'')));
 };
 $('exportCompare').onclick=()=>{
  if(!compareRows.length){$('docStatus').textContent='Спочатку виконайте зіставлення';return}

@@ -137,7 +137,7 @@ ipcMain.handle('report:xlsx',async(_event,payload)=>{
  const {dialog}=require('electron');
  if(!payload||!Array.isArray(payload.sheets)||payload.sheets.length>12)throw Error('Некоректні дані звіту');
  for(const s of payload.sheets){if(!Array.isArray(s.headers)||!Array.isArray(s.rows)||s.rows.length>20000)throw Error('Перевищено розмір звіту')}
- const {canceled,filePath}=await dialog.showSaveDialog(win,{title:'Зберегти звіт XLSX',defaultPath:'ENGINEER_PRO_звіт_0.9.2.xlsx',filters:[{name:'Excel',extensions:['xlsx']}]});
+ const {canceled,filePath}=await dialog.showSaveDialog(win,{title:'Зберегти звіт XLSX',defaultPath:'ENGINEER_PRO_звіт_0.9.3.xlsx',filters:[{name:'Excel',extensions:['xlsx']}]});
  if(canceled||!filePath)return {saved:false};
  const data=require('./xlsx-report').build(payload.sheets);require('fs').writeFileSync(filePath,data);return {saved:true,filePath};
 });
