@@ -1,0 +1,4 @@
+const assert=require('assert');const {compare}=require('./specification-analyzer');
+const spec={file:'a.pdf',items:[{name:'Кабель ВВГ 3х2,5',qty:100,unit:'м',page:4,sourceFile:'a.pdf'},{name:'Розетка зовнішня',qty:2,unit:'шт',sourceFile:'b.pdf'}]};
+const estimate={items:[{name:'Кабель ВВГ 3х2,5',qty:0.1,unit:'км',line:22,sheet:'ЛК-1',code:'С1'},{name:'Автомат 16А',qty:3,unit:'шт',line:30,sheet:'ЛК-1'}]};
+const r=compare(spec,estimate);assert.equal(r.summary.matched,1);assert.equal(r.summary.unmatchedEstimate,1);assert.equal(r.rows[0].sourceFile,'a.pdf');assert.equal(r.rows[0].estimateSheet,'ЛК-1');assert.equal(r.rows[1].status,'Немає точного збігу назви (перевірити вручну)');assert.equal(r.rows[2].status,'Позиція кошторису без підтвердженого зіставлення');console.log('0.9.1 reconciliation OK');

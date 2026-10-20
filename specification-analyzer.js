@@ -62,15 +62,36 @@ async function analyze(file,options={}){if(typeof file!=='string'||!path.isAbsol
  }else throw Error('Для специфікацій підтримуються PDF, XLSX і CSV');
  return {file:path.basename(file),pages,items:items.slice(0,5000),totalFound:items.length,warnings};
 }
-function compare(spec,estimate){if(!spec||!Array.isArray(spec.items)||!estimate||!Array.isArray(estimate.items))throw Error('Спочатку імпортуйте специфікацію та кошторис');
- const est=estimate.items.filter(x=>x&&clean(x.name).length>4),rows=[];
- for(const item of spec.items){const candidates=est.filter(x=>key(x.name)===key(item.name));let status='Немає точного збігу назви в кошторисі',match=null,diff=null;
- if(candidates.length===1){match=candidates[0];const a=numeric(item.qty),b=numeric(match.qty),ua=unitOf(item.unit),ub=unitOf(match.unit);
-  if(a===null||b===null)status='Кількість не підтверджена';else if(!ua||!ub)status='Одиниці не розпізнано';else{
-   const ca=canonical(ua,a),cb=canonical(ub,b);if(ca.u!==cb.u)status='Несумісні одиниці';else{diff=Number((ca.q-cb.q).toFixed(6));status=Math.abs(diff)<1e-7?'Текстовий збіг':'Розбіжність кількості'}
+function compare(spec,estimate){
+ if(!spec||!Array.isArray(spec.items)||!estimate||!Array.isArray(estimate.items))throw Error('Спочатку імпортуйте специфікацію та кошторис');
+ const specs=spec.items.filter(x=>x&&clean(x.name).length>4);
+ const est=estimate.items.filter(x=>x&&clean(x.name).length>4);
+ const rows=[],used=new Set();
+ const normalizeCode=x=>key(x||'').replace(/\s+/g,'');
+ for(const item of specs){
+  const candidates=est.map((e,i)=>({e,i})).filter(({e})=>key(e.name)===key(item.name));
+  let match=null,matchIndex=-1,status='Немає точного збігу назви (перевірити вручну)',diff=null;
+  if(candidates.length===1){match=candidates[0].e;matchIndex=candidates[0].i}
+  else if(candidates.length>1){
+   const code=normalizeCode(item.code);
+   const byCode=code?candidates.filter(({e})=>normalizeCode(e.code)===code):[];
+   if(byCode.length===1){match=byCode[0].e;matchIndex=byCode[0].i}
+   else status='Неоднозначно: кілька позицій кошторису';
   }
- }else if(candidates.length>1)status='Неоднозначно: кілька позицій кошторису';
- rows.push({name:item.name,unitSpec:item.unit,qtySpec:item.qty,unitEstimate:match?.unit||'',qtyEstimate:match?.qty??'',diff,status,page:item.page??'',line:item.line??'',sheet:item.sheet||'',estimateLine:match?.line??'',estimateCode:match?.code||'',source:item.source||'',sourceMethod:item.sourceMethod||'text',review:'Звірити за оригіналом креслення/специфікації та локального кошторису'});
- }return {rows,summary:{spec:spec.items.length,matched:rows.filter(x=>x.status==='Текстовий збіг').length,review:rows.filter(x=>x.status!=='Текстовий збіг').length}};
+  if(match){
+   used.add(matchIndex);
+   const a=numeric(item.qty),b=numeric(match.qty),ua=unitOf(item.unit),ub=unitOf(match.unit);
+   if(a===null||b===null)status='Кількість не підтверджена';
+   else if(!ua||!ub)status='Одиниці не розпізнано';
+   else{const ca=canonical(ua,a),cb=canonical(ub,b);
+    if(ca.u!==cb.u)status='Несумісні одиниці';
+    else{diff=Number((ca.q-cb.q).toFixed(6));status=Math.abs(diff)<1e-7?'Текстовий збіг':'Розбіжність кількості'}
+   }
+  }
+  rows.push({sourceFile:item.sourceFile||spec.file||'',name:item.name,unitSpec:item.unit,qtySpec:item.qty,unitEstimate:match?.unit||'',qtyEstimate:match?.qty??'',diff,status,page:item.page??'',line:item.line??'',sheet:item.sheet||'',estimateSheet:match?.sheet||'',estimateLine:match?.line??'',estimateCode:match?.code||'',source:item.source||'',sourceMethod:item.sourceMethod||'text',review:'Попередня автоматична звірка: перевірити марку, характеристики, обсяги та креслення за оригіналами'});
+ }
+ // These are NOT automatically excess materials: drawings may have been incompletely read.
+ est.forEach((e,i)=>{if(!used.has(i))rows.push({sourceFile:'',name:e.name,unitSpec:'',qtySpec:'',unitEstimate:e.unit||'',qtyEstimate:e.qty??'',diff:null,status:'Позиція кошторису без підтвердженого зіставлення',page:'',line:'',sheet:'',estimateSheet:e.sheet||'',estimateLine:e.line??'',estimateCode:e.code||'',source:'',sourceMethod:'estimate',review:'Не вважати зайвою: перевірити всі креслення та специфікації, зокрема нерозпізнані рядки'})});
+ return {rows,summary:{spec:specs.length,estimate:est.length,matched:rows.filter(x=>x.status==='Текстовий збіг').length,review:rows.filter(x=>x.status!=='Текстовий збіг').length,unmatchedEstimate:rows.filter(x=>x.status==='Позиція кошторису без підтвердженого зіставлення').length}};
 }
 module.exports={analyze,compare,extractFromLines,numeric,pdfLines};

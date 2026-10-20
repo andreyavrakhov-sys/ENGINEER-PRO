@@ -588,26 +588,26 @@ $('compareSpecification').onclick=async()=>{
  if(!activeSpec){$('specStatus').textContent='Спочатку зчитайте специфікацію';return}
  if(!importedEstimate?.items?.length){$('specStatus').textContent='Спочатку імпортуйте кошторис Excel із поля A кнопкою «Імпорт кошторису АВК-5»';return}
  const button=$('compareSpecification');button.disabled=true;
- try{const report=await window.engineer.compareSpecification(activeSpec,importedEstimate);specRows=report.rows.map((row,i)=>({...row,sourceFile:activeSpec.items[i]?.sourceFile||''}));
-  $('specStatus').textContent=`Позицій: ${report.summary.spec}; точних текстових збігів: ${report.summary.matched}; на перевірку: ${report.summary.review}. Неоднозначні та відсутні текстові збіги потребують ручного підтвердження.`;
+ try{const report=await window.engineer.compareSpecification(activeSpec,importedEstimate);specRows=report.rows;
+  $('specStatus').textContent=`Позицій: ${report.summary.spec}; точних текстових збігів: ${report.summary.matched}; на перевірку: ${report.summary.review}. Не зіставлено позицій кошторису: ${report.summary.unmatchedEstimate}. Це не означає, що вони зайві. Усі висновки потребують перевірки.`;
   $('exportSpecification').disabled=!specRows.length;renderSpecRows(specRows);
  }catch(e){$('specStatus').textContent='Помилка звірки: '+e.message}finally{button.disabled=false}
 };
 function renderSpecRows(rows){const root=$('specResult');root.replaceChildren();if(!rows.length){root.textContent='Не знайдено повних рядків для перевірки. Спробуйте табличний XLSX/CSV або PDF з текстовим шаром.';return}
- const keys=[['sourceFile','Файл джерела'],['sourceMethod','Метод читання'],['name','Найменування'],['qtySpec','За проєктом'],['unitSpec','Од. проєкту'],['qtyEstimate','За кошторисом'],['unitEstimate','Од. кошторису'],['diff','Різниця (після перерахунку одиниць)'],['status','Статус'],['page','Стор. PDF'],['sheet','Аркуш'],['line','Рядок специфікації'],['estimateLine','Рядок кошторису'],['estimateCode','Шифр'],['source','Вихідний текст']];
+ const keys=[['sourceFile','Файл джерела'],['sourceMethod','Метод читання'],['name','Найменування'],['qtySpec','За проєктом'],['unitSpec','Од. проєкту'],['qtyEstimate','За кошторисом'],['unitEstimate','Од. кошторису'],['diff','Різниця (після перерахунку одиниць)'],['status','Статус'],['page','Стор. PDF'],['sheet','Аркуш'],['line','Рядок специфікації'],['estimateSheet','Аркуш кошторису'],['estimateLine','Рядок кошторису'],['estimateCode','Шифр'],['source','Вихідний текст']];
  const table=document.createElement('table');table.className='compare-table';const head=document.createElement('tr');for(const [,label] of keys){const th=document.createElement('th');th.textContent=label;head.append(th)}table.append(head);
  for(const row of rows.slice(0,350)){const tr=document.createElement('tr');if(row.status!=='Текстовий збіг')tr.className='compare-discrepancy';for(const [key] of keys){const td=document.createElement('td');td.textContent=row[key]??'';tr.append(td)}table.append(tr)}root.append(table);
  if(rows.length>350){const p=document.createElement('p');p.className='muted';p.textContent='На екрані перші 350 рядків; CSV містить усі.';root.append(p)}
 }
 $('exportSpecification').onclick=()=>{if(!specRows.length)return;
- const keys=['sourceFile','sourceMethod','name','qtySpec','unitSpec','qtyEstimate','unitEstimate','diff','status','page','sheet','line','estimateLine','estimateCode','source','review'];
- const headers=['Файл джерела','Метод читання','Найменування','За проєктом','Од. проєкту','За кошторисом','Од. кошторису','Різниця (перерахована)','Статус','Сторінка PDF','Аркуш','Рядок специфікації','Рядок кошторису','Шифр','Вихідний текст','Примітка'];
- exportCSV('ENGINEER_PRO_специфікація_розбіжності_0.8.3.csv',headers,specRows.map(r=>keys.map(k=>r[k]??'')));
+ const keys=['sourceFile','sourceMethod','name','qtySpec','unitSpec','qtyEstimate','unitEstimate','diff','status','page','sheet','line','estimateSheet','estimateLine','estimateCode','source','review'];
+ const headers=['Файл джерела','Метод читання','Найменування','За проєктом','Од. проєкту','За кошторисом','Од. кошторису','Різниця (перерахована)','Статус','Сторінка PDF','Аркуш','Рядок специфікації','Аркуш кошторису','Рядок кошторису','Шифр','Вихідний текст','Примітка'];
+ exportCSV('ENGINEER_PRO_специфікація_розбіжності_0.9.1.csv',headers,specRows.map(r=>keys.map(k=>r[k]??'')));
 };
 $('exportEstimate').onclick=()=>{
  if(!importedEstimate?.items?.length)return;
  const keys=['sheet','estimate','section','line','number','code','basis','name','unit','qty','unitPrice','total','coefficients','kind'];
- exportCSV('ENGINEER_PRO_позиції_кошторису_0.8.2.csv',keys,importedEstimate.items.map(item=>keys.map(k=>Array.isArray(item[k])?item[k].join(' | '):item[k]??'')));
+ exportCSV('ENGINEER_PRO_позиції_кошторису_0.9.1.csv',keys,importedEstimate.items.map(item=>keys.map(k=>Array.isArray(item[k])?item[k].join(' | '):item[k]??'')));
 };
 $('exportCompare').onclick=()=>{
  if(!compareRows.length){$('docStatus').textContent='Спочатку виконайте зіставлення';return}
