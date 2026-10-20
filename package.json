@@ -20,15 +20,15 @@
       "output": "dist"
     },
     "files": [
-      "**/*",
-      "!dist/**",
-      "!android/**",
-      "!.github/**",
-      "!test-*.js",
-      "!README*.md",
-      "!BUILD_FIX*.md",
-      "!START_HERE*.md",
-      "!node_modules/.cache/**"
+      "main.js",
+      "preload.js",
+      "index.html",
+      "sync.html",
+      "update-config.json",
+      "shared/**/*",
+      "sunset-tower.png",
+      "package.json",
+      "node_modules/**/*"
     ],
     "win": {
       "target": [
