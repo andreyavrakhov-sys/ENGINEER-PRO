@@ -62,32 +62,45 @@ async function analyze(file,options={}){if(typeof file!=='string'||!path.isAbsol
  }else throw Error('Для специфікацій підтримуються PDF, XLSX і CSV');
  return {file:path.basename(file),pages,items:items.slice(0,5000),totalFound:items.length,warnings};
 }
-function technicalTokens(name){
- const text=key(name).replace(/[×хxХ]/g,'x').replace(/(\d),(\d)/g,'$1.$2');
- const stop=new Set(['для','та','або','від','типу','з','із','на','по','до','шт','комплект','виріб','монтаж','установка','робіт']);
- return [...new Set((text.match(/[\p{L}\d]+(?:[.\-/][\p{L}\d]+)*/gu)||[]).filter(t=>t.length>2&&!stop.has(t)))];
+function normalizeName(v){return key(v).replace(/[×хxХфøØ]/g,'x').replace(/(\d),(\d)/g,'$1.$2').replace(/\b(діам(?:етр)?|diameter)\b/g,'d').replace(/\b(шт\.?|штук|pcs)\b/g,' ').replace(/[^\p{L}\p{N}.]+/gu,' ').replace(/\s+/g,' ').trim()}
+const generic=new Set(['для','та','або','від','типу','із','на','по','до','шт','комплект','виріб','монтаж','установка','робіт','обладнання','електричний','електрична','система','робота','виконання','з','у','і','й']);
+function technicalTokens(name){return [...new Set((normalizeName(name).match(/[\p{L}\d]+(?:[.\-/][\p{L}\d]+)*/gu)||[]).filter(t=>t.length>2&&!generic.has(t)))];}
+function specsOf(name){
+ const s=normalizeName(name);const models=new Set((s.match(/\b(?=[a-zа-яіїєґ0-9.-]*\d)[a-zа-яіїєґ][a-zа-яіїєґ0-9.-]{3,}\b/giu)||[]).filter(t=>/\d/.test(t)));
+ const dimensions=new Set((s.match(/\b\d+(?:\.\d+)?\s*x\s*\d+(?:\.\d+)?(?:\s*x\s*\d+(?:\.\d+)?)?\b/g)||[]).map(t=>t.replace(/\s/g,'')));
+ const power=new Set((s.match(/(?<![\p{L}\d])\d+(?:\.\d+)?\s*(?:квт|вт|kw|w)(?![\p{L}\d])/giu)||[]).map(t=>t.replace(/\s/g,'')));
+ const ip=new Set((s.match(/\bip\s*\d{2}\b/giu)||[]).map(t=>t.replace(/\s/g,'')));
+ return {models,dimensions,power,ip};
 }
 function candidateScore(a,b){
  const ta=technicalTokens(a),tb=technicalTokens(b);if(!ta.length||!tb.length)return 0;
- const aa=new Set(ta),bb=new Set(tb),shared=[...aa].filter(t=>bb.has(t));
- const technical=t=>/\d/.test(t)&&t.length>=3;
- const aTech=ta.filter(technical),bTech=tb.filter(technical);
- if(aTech.length&&bTech.length&&!aTech.some(t=>bTech.includes(t)))return 0;
- const overlap=shared.length/Math.max(aa.size,bb.size);
- const technicalBonus=aTech.length&&aTech.some(t=>bTech.includes(t))?0.12:0;
- return Math.min(1,overlap+technicalBonus);
+ const aa=new Set(ta),bb=new Set(tb),shared=ta.filter(t=>bb.has(t));
+ const sa=specsOf(a),sb=specsOf(b);
+ for(const field of ['dimensions','power','ip'])if(sa[field].size&&sb[field].size&&![...sa[field]].some(t=>sb[field].has(t)))return 0;
+ // Matching only a generic technical characteristic (e.g. 220V) is insufficient.
+ const lexical=shared.filter(t=>!/^\d+(?:\.\d+)?$/.test(t));
+ if(!lexical.length)return 0;
+ const coverage=shared.length/Math.max(aa.size,bb.size);
+ const distinctive=lexical.some(t=>t.length>=5||/\d/.test(t));
+ const bonus=distinctive?0.12:0;
+ return Math.min(1,coverage+bonus);
 }
 function suggestCandidates(item,est){
  const ua=unitOf(item.unit);
  return est.map((e,i)=>{const ub=unitOf(e.unit);let compatible=false;
   if(ua&&ub){try{compatible=canonical(ua,1).u===canonical(ub,1).u}catch{}}
-  const score=candidateScore(item.name,e.name);
-  return {e,i,score,compatible};
- }).filter(x=>x.compatible&&x.score>=0.34).sort((a,b)=>b.score-a.score).slice(0,3);
+  return {e,i,score:candidateScore(item.name,e.name),compatible};
+ }).filter(x=>x.compatible&&x.score>=0.34).sort((a,b)=>b.score-a.score).slice(0,5);
 }
+function isNonSpecification(item){
+ const name=key(item.name);const source=key(item.source||'');
+ return /(?:(?:оксид\s+(?:азоту|вуглецю|заліза|марганцю)|(?:азоту|вуглецю|заліза|марганцю)\s+оксид)|фториди\s+неорганічні|діоксид\s+(?:азоту|сірки)|викид[иів]|забруднююч[иа]|гранично\s+допустим)/u.test(name)||(/(?:викиди\s+забруднюючих|забруднюючих\s+речовин)/u.test(source)&&!/(?:кабель|вентилятор|болт|шафа)/u.test(name));
+}
+function quantityDiff(spec,estimate){const a=numeric(spec.qty),b=numeric(estimate.qty),ua=unitOf(spec.unit),ub=unitOf(estimate.unit);if(a===null||b===null||!ua||!ub)return null;try{const ca=canonical(ua,a),cb=canonical(ub,b);return ca.u===cb.u?Number((ca.q-cb.q).toFixed(6)):null}catch{return null}}
 function compare(spec,estimate){
  if(!spec||!Array.isArray(spec.items)||!estimate||!Array.isArray(estimate.items))throw Error('Спочатку імпортуйте специфікацію та кошторис');
- const specs=spec.items.filter(x=>x&&clean(x.name).length>4);
+ const excluded=spec.items.filter(x=>x&&isNonSpecification(x));
+ const specs=spec.items.filter(x=>x&&clean(x.name).length>4&&!isNonSpecification(x));
  const est=estimate.items.filter(x=>x&&clean(x.name).length>4);
  const rows=[],used=new Set();
  const normalizeCode=x=>key(x||'').replace(/\s+/g,'');
@@ -112,11 +125,12 @@ function compare(spec,estimate){
    }
   }
   const suggestions=match?[]:suggestCandidates(item,est);
+  const best=suggestions[0];
   if(!match&&suggestions.length&&!status.startsWith('Неоднозначно')){status='Можливий відповідник — перевірити вручну';}
-  rows.push({suggestions:suggestions.map(x=>({name:x.e.name,code:x.e.code||'',sheet:x.e.sheet||'',line:x.e.line??'',score:Number(x.score.toFixed(3))})),suggestedMatches:suggestions.map(x=>`${x.e.name} [${x.e.code||'без шифру'}; ${x.e.sheet||''}:${x.e.line||''}; ${Math.round(x.score*100)}%]`).join(' | '),sourceFile:item.sourceFile||spec.file||'',name:item.name,unitSpec:item.unit,qtySpec:item.qty,unitEstimate:match?.unit||'',qtyEstimate:match?.qty??'',diff,status,page:item.page??'',line:item.line??'',sheet:item.sheet||'',estimateSheet:match?.sheet||'',estimateLine:match?.line??'',estimateCode:match?.code||'',source:item.source||'',sourceMethod:item.sourceMethod||'text',review:'Попередня автоматична звірка: перевірити марку, характеристики, обсяги та креслення за оригіналами'});
+  rows.push({suggestions:suggestions.map(x=>({name:x.e.name,code:x.e.code||'',sheet:x.e.sheet||'',line:x.e.line??'',score:Number(x.score.toFixed(3)),qty:x.e.qty??'',unit:x.e.unit||'',difference:quantityDiff(item,x.e),index:x.i})),suggestedMatches:suggestions.map(x=>`${x.e.name} [${x.e.code||'без шифру'}; ${x.e.sheet||''}:${x.e.line||''}; ${Math.round(x.score*100)}%; кошторис ${x.e.qty??'—'} ${x.e.unit||''}; різниця ${quantityDiff(item,x.e)??'не визначено'}]`).join(' | '),sourceFile:item.sourceFile||spec.file||'',name:item.name,unitSpec:item.unit,qtySpec:item.qty,unitEstimate:match?.unit||'',qtyEstimate:match?.qty??'',diff,status,page:item.page??'',line:item.line??'',sheet:item.sheet||'',estimateSheet:match?.sheet||'',estimateLine:match?.line??'',estimateCode:match?.code||'',source:item.source||'',sourceMethod:item.sourceMethod||'text',review:'Попередня автоматична звірка: перевірити марку, характеристики, обсяги та креслення за оригіналами'});
  }
  // These are NOT automatically excess materials: drawings may have been incompletely read.
  est.forEach((e,i)=>{if(!used.has(i))rows.push({sourceFile:'',name:e.name,unitSpec:'',qtySpec:'',unitEstimate:e.unit||'',qtyEstimate:e.qty??'',diff:null,status:'Позиція кошторису без підтвердженого зіставлення',page:'',line:'',sheet:'',estimateSheet:e.sheet||'',estimateLine:e.line??'',estimateCode:e.code||'',source:'',sourceMethod:'estimate',review:'Не вважати зайвою: перевірити всі креслення та специфікації, зокрема нерозпізнані рядки'})});
- return {rows,summary:{spec:specs.length,estimate:est.length,matched:rows.filter(x=>x.status==='Текстовий збіг').length,review:rows.filter(x=>x.status!=='Текстовий збіг').length,unmatchedEstimate:rows.filter(x=>x.status==='Позиція кошторису без підтвердженого зіставлення').length}};
+ return {rows,summary:{excludedNonSpecification:excluded.length,spec:specs.length,estimate:est.length,matched:rows.filter(x=>x.status==='Текстовий збіг').length,review:rows.filter(x=>x.status!=='Текстовий збіг').length,unmatchedEstimate:rows.filter(x=>x.status==='Позиція кошторису без підтвердженого зіставлення').length}};
 }
-module.exports={analyze,compare,extractFromLines,numeric,pdfLines,candidateScore,suggestCandidates};
+module.exports={analyze,compare,extractFromLines,numeric,pdfLines,candidateScore,suggestCandidates,isNonSpecification,quantityDiff};

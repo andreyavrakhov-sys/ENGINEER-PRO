@@ -1,0 +1,12 @@
+const assert=require('assert');
+const {compare,candidateScore,isNonSpecification}=require('./specification-analyzer');
+assert(isNonSpecification({name:'Марганцю оксид',source:'Викиди забруднюючих речовин'}));
+assert(!isNonSpecification({name:'Вентилятор осьовий WOKS 400',source:''}));
+assert.equal(candidateScore('Вентилятор 140 Вт IP44 WOKS 400','Вентилятор 250 Вт IP44 WOKS 400'),0);
+const result=compare({items:[{name:'Вентилятор осьовий 140 Вт IP44 WOKS 400 Dospel',qty:44,unit:'шт'},{name:'Марганцю оксид',qty:1,unit:'т'}]},{items:[{name:'Вентилятор осьовий 140 Вт IP44 WOKS 400',qty:40,unit:'шт',sheet:'sheet13',line:18,code:'С123'}]});
+assert.equal(result.summary.excludedNonSpecification,1);
+assert(result.rows[0].suggestions.length>0);
+assert.equal(result.rows[0].suggestions[0].difference,4);
+assert(result.rows[0].suggestedMatches.includes('різниця 4'));
+assert(result.rows[0].status.includes('Можливий'));
+console.log('0.9.4 regression OK');
