@@ -131,3 +131,13 @@ ipcMain.handle('launchers:open',async(_event,id)=>{
  await new Promise((resolve,reject)=>{const child=execFile(p,[],{cwd:path.dirname(p),windowsHide:false},err=>{if(err)console.error('Програма завершилась:',err.message)});child.once('spawn',resolve);child.once('error',reject)});
  return true;
 });
+
+// Export a multi-sheet XLSX report without external network services.
+ipcMain.handle('report:xlsx',async(_event,payload)=>{
+ const {dialog}=require('electron');
+ if(!payload||!Array.isArray(payload.sheets)||payload.sheets.length>12)throw Error('Некоректні дані звіту');
+ for(const s of payload.sheets){if(!Array.isArray(s.headers)||!Array.isArray(s.rows)||s.rows.length>20000)throw Error('Перевищено розмір звіту')}
+ const {canceled,filePath}=await dialog.showSaveDialog(win,{title:'Зберегти звіт XLSX',defaultPath:'ENGINEER_PRO_звіт_0.9.2.xlsx',filters:[{name:'Excel',extensions:['xlsx']}]});
+ if(canceled||!filePath)return {saved:false};
+ const data=require('./xlsx-report').build(payload.sheets);require('fs').writeFileSync(filePath,data);return {saved:true,filePath};
+});
