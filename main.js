@@ -141,3 +141,27 @@ ipcMain.handle('report:xlsx',async(_event,payload)=>{
  if(canceled||!filePath)return {saved:false};
  const data=require('./xlsx-report').build(payload.sheets);require('fs').writeFileSync(filePath,data);return {saved:true,filePath};
 });
+
+
+// Self-diagnostics use synthetic data only; never include project names, paths or API keys.
+ipcMain.handle('diagnostics:run',async()=>{
+ const tests=[];const started=new Date().toISOString();
+ async function check(id,group,fn){const t=Date.now();try{const details=await fn();tests.push({id,group,status:'pass',ms:Date.now()-t,details:String(details||'OK')})}catch(e){tests.push({id,group,status:'fail',ms:Date.now()-t,error:String(e.message||e).slice(0,500)})}}
+ await check('runtime','Система',()=>`Electron ${process.versions.electron}, Node ${process.versions.node}, packaged=${app.isPackaged}`);
+ await check('modules','Модулі',()=>{for(const n of ['compare-engine','document-reader','estimate-importer','specification-analyzer','xlsx-report','pdf-enhanced'])require('./'+n);return '6 модулів завантажено'});
+ await check('files','Пакування',()=>{for(const n of ['index.html','preload.js','update-config.json'])if(!fs.existsSync(path.join(__dirname,n)))throw Error('Відсутній '+n);return 'Основні файли доступні'});
+ await check('storage-read','Дані',()=>{const d=read('data.json',{tasks:[],projects:[]});if(!d||typeof d!=='object'||Array.isArray(d))throw Error('Некоректне сховище');return 'Формат даних правильний; вміст не включено до звіту'});
+ await check('storage-write','Дані',()=>{const f=store('diagnostic-probe-'+process.pid+'.tmp');try{fs.writeFileSync(f,'engineer-pro-probe');if(fs.readFileSync(f,'utf8')!=='engineer-pro-probe')throw Error('Помилка перевірки');return 'Тестовий файл записано й прочитано'}finally{try{fs.unlinkSync(f)}catch{}}});
+ await check('compare','Порівняння',()=>{const r=require('./compare-engine').compare([['Шифр','Найменування','Одиниця виміру','Кількість'],['К1','Кабель','м','10']],[['Шифр','Найменування','Одиниця виміру','Кількість'],['К1','Кабель','м','8']]);if(!r.results.some(x=>x.status==='Розбіжність кількості'))throw Error('Розбіжність не визначена');return 'Різницю кількості визначено'});
+ await check('technical','Технічні параметри',()=>{const a=require('./specification-analyzer');for(const [x,y] of [['Шафа 35 кВ','Шафа 10 кВ'],['Конвектор 0,5 кВт','Конвектор 2 кВт'],['Автомат 160 А','Автомат 100 А']])if(!a.technicalConflicts(x,y).length)throw Error('Пропущено конфлікт: '+x);return 'Напруга, потужність і струм перевірені'});
+ await check('quantities','Звірка',()=>{const r=require('./specification-analyzer').compare({items:[{name:'Шафа захисту 35 кВ',qty:2,unit:'шт'}]},{items:[{name:'Шафа захисту 35 кВ',qty:1,unit:'шт',code:'К1'}]});if(r.rows[0].diff!==1)throw Error('Невірна різниця');return '2 − 1 = 1'});
+ await check('xlsx','Експорт',()=>{const b=require('./xlsx-report').build([{name:'Тест',headers:['Назва','Кількість'],rows:[['Кабель',10]]}]);if(!Buffer.isBuffer(b)||b.readUInt32LE(0)!==0x04034b50)throw Error('Некоректний XLSX ZIP');return `XLSX згенеровано (${b.length} байт)`});
+ await check('updates','Оновлення',()=>{if(!updateConfig.githubOwner||!updateConfig.githubRepo)throw Error('Не налаштовано репозиторій');return 'Конфігурація оновлень присутня; мережу не перевірено'});
+ const pass=tests.filter(t=>t.status==='pass').length;
+ return {schema:'engineer-pro-diagnostics/v1',generatedAt:new Date().toISOString(),startedAt:started,appVersion:app.getVersion(),platform:process.platform,packaged:app.isPackaged,summary:{passed:pass,failed:tests.length-pass,total:tests.length},tests,limitations:['Це автоматична перевірка ядра, не перевірка реальних PDF/OCR/AI/API або кожної кнопки інтерфейсу','Персональні файли, ключі та вміст проєктів не включено']};
+});
+ipcMain.handle('diagnostics:export',async(_e,report)=>{
+ if(!report||report.schema!=='engineer-pro-diagnostics/v1')throw Error('Некоректний звіт');
+ const r=await dialog.showSaveDialog(win,{title:'Зберегти діагностику для аналізу',defaultPath:'ENGINEER_PRO_diagnostics_'+app.getVersion()+'.json',filters:[{name:'JSON',extensions:['json']}]});
+ if(r.canceled||!r.filePath)return {saved:false};fs.writeFileSync(r.filePath,JSON.stringify(report,null,2),'utf8');return {saved:true};
+});
