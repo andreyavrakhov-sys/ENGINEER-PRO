@@ -72,7 +72,25 @@ function specsOf(name){
  const ip=new Set((s.match(/\bip\s*\d{2}\b/giu)||[]).map(t=>t.replace(/\s/g,'')));
  return {models,dimensions,power,ip};
 }
+// Technical constraints are safety gates, not evidence of a confirmed match.
+function technicalValues(name){
+ const s=normalizeName(name);const values={voltage:[],power:[],current:[],ip:[]};
+ const rules={voltage:/(\d+(?:\.\d+)?)\s*(кв|kv|в|v)(?![\p{L}\d])/giu,power:/(\d+(?:\.\d+)?)\s*(квт|kw|вт|w)(?![\p{L}\d])/giu,current:/(\d+(?:\.\d+)?)\s*(а|amp)(?![\p{L}\d])/giu,ip:/\bip\s*(\d{2})\b/giu};
+ for(const [type,re] of Object.entries(rules))for(const m of s.matchAll(re)){
+  let n=Number(m[1]);if(type==='voltage'&&['в','v'].includes(m[2]))n/=1000;
+  if(type==='power'&&['вт','w'].includes(m[2]))n/=1000;
+  if(!values[type].includes(n))values[type].push(n);
+ }return values;
+}
+function technicalConflicts(a,b){
+ const x=technicalValues(a),y=technicalValues(b),conflicts=[];
+ for(const field of ['voltage','power','current','ip'])if(x[field].length&&y[field].length&&!x[field].some(v=>y[field].some(w=>Math.abs(v-w)<1e-7)))conflicts.push(field);
+ const xa=specsOf(a),xb=specsOf(b);
+ if(xa.dimensions.size&&xb.dimensions.size&&![...xa.dimensions].some(v=>xb.dimensions.has(v)))conflicts.push('dimensions');
+ return conflicts;
+}
 function candidateScore(a,b){
+ if(technicalConflicts(a,b).length)return 0;
  const ta=technicalTokens(a),tb=technicalTokens(b);if(!ta.length||!tb.length)return 0;
  const aa=new Set(ta),bb=new Set(tb),shared=ta.filter(t=>bb.has(t));
  const sa=specsOf(a),sb=specsOf(b);
@@ -107,11 +125,11 @@ function compare(spec,estimate){
  for(const item of specs){
   const candidates=est.map((e,i)=>({e,i})).filter(({e})=>key(e.name)===key(item.name));
   let match=null,matchIndex=-1,status='Немає точного збігу назви (перевірити вручну)',diff=null;
-  if(candidates.length===1){match=candidates[0].e;matchIndex=candidates[0].i}
+  if(candidates.length===1&&!technicalConflicts(item.name,candidates[0].e.name).length){match=candidates[0].e;matchIndex=candidates[0].i}
   else if(candidates.length>1){
    const code=normalizeCode(item.code);
    const byCode=code?candidates.filter(({e})=>normalizeCode(e.code)===code):[];
-   if(byCode.length===1){match=byCode[0].e;matchIndex=byCode[0].i}
+   if(byCode.length===1&&!technicalConflicts(item.name,byCode[0].e.name).length){match=byCode[0].e;matchIndex=byCode[0].i}
    else status='Неоднозначно: кілька позицій кошторису';
   }
   if(match){
@@ -127,10 +145,11 @@ function compare(spec,estimate){
   const suggestions=match?[]:suggestCandidates(item,est);
   const best=suggestions[0];
   if(!match&&suggestions.length&&!status.startsWith('Неоднозначно')){status='Можливий відповідник — перевірити вручну';}
-  rows.push({suggestions:suggestions.map(x=>({name:x.e.name,code:x.e.code||'',sheet:x.e.sheet||'',line:x.e.line??'',score:Number(x.score.toFixed(3)),qty:x.e.qty??'',unit:x.e.unit||'',difference:quantityDiff(item,x.e),index:x.i})),suggestedMatches:suggestions.map(x=>`${x.e.name} [${x.e.code||'без шифру'}; ${x.e.sheet||''}:${x.e.line||''}; ${Math.round(x.score*100)}%; кошторис ${x.e.qty??'—'} ${x.e.unit||''}; різниця ${quantityDiff(item,x.e)??'не визначено'}]`).join(' | '),sourceFile:item.sourceFile||spec.file||'',name:item.name,unitSpec:item.unit,qtySpec:item.qty,unitEstimate:match?.unit||'',qtyEstimate:match?.qty??'',diff,status,page:item.page??'',line:item.line??'',sheet:item.sheet||'',estimateSheet:match?.sheet||'',estimateLine:match?.line??'',estimateCode:match?.code||'',source:item.source||'',sourceMethod:item.sourceMethod||'text',review:'Попередня автоматична звірка: перевірити марку, характеристики, обсяги та креслення за оригіналами'});
+  if(!match&&candidates.some(x=>technicalConflicts(item.name,x.e.name).length))status='Конфлікт технічних параметрів — перевірити вручну';
+  rows.push({candidateName:best?.e.name||'',candidateCode:best?.e.code||'',candidateQty:best?.e.qty??'',candidateUnit:best?.e.unit||'',candidateDiff:best?quantityDiff(item,best.e):null,candidateLocation:best?`${best.e.sheet||''}:${best.e.line??''}`:'',technicalCheck:match?'Перевірити за оригіналом':(status.startsWith('Конфлікт')?'Конфлікт параметрів':'Не підтверджено'),suggestions:suggestions.map(x=>({name:x.e.name,code:x.e.code||'',sheet:x.e.sheet||'',line:x.e.line??'',score:Number(x.score.toFixed(3)),qty:x.e.qty??'',unit:x.e.unit||'',difference:quantityDiff(item,x.e),index:x.i})),suggestedMatches:suggestions.map(x=>`${x.e.name} [${x.e.code||'без шифру'}; ${x.e.sheet||''}:${x.e.line||''}; ${Math.round(x.score*100)}%; кошторис ${x.e.qty??'—'} ${x.e.unit||''}; різниця ${quantityDiff(item,x.e)??'не визначено'}]`).join(' | '),sourceFile:item.sourceFile||spec.file||'',name:item.name,unitSpec:item.unit,qtySpec:item.qty,unitEstimate:match?.unit||'',qtyEstimate:match?.qty??'',diff,status,page:item.page??'',line:item.line??'',sheet:item.sheet||'',estimateSheet:match?.sheet||'',estimateLine:match?.line??'',estimateCode:match?.code||'',source:item.source||'',sourceMethod:item.sourceMethod||'text',review:'Попередня автоматична звірка: перевірити марку, характеристики, обсяги та креслення за оригіналами'});
  }
  // These are NOT automatically excess materials: drawings may have been incompletely read.
  est.forEach((e,i)=>{if(!used.has(i))rows.push({sourceFile:'',name:e.name,unitSpec:'',qtySpec:'',unitEstimate:e.unit||'',qtyEstimate:e.qty??'',diff:null,status:'Позиція кошторису без підтвердженого зіставлення',page:'',line:'',sheet:'',estimateSheet:e.sheet||'',estimateLine:e.line??'',estimateCode:e.code||'',source:'',sourceMethod:'estimate',review:'Не вважати зайвою: перевірити всі креслення та специфікації, зокрема нерозпізнані рядки'})});
  return {rows,summary:{excludedNonSpecification:excluded.length,spec:specs.length,estimate:est.length,matched:rows.filter(x=>x.status==='Текстовий збіг').length,review:rows.filter(x=>x.status!=='Текстовий збіг').length,unmatchedEstimate:rows.filter(x=>x.status==='Позиція кошторису без підтвердженого зіставлення').length}};
 }
-module.exports={analyze,compare,extractFromLines,numeric,pdfLines,candidateScore,suggestCandidates,isNonSpecification,quantityDiff};
+module.exports={analyze,compare,extractFromLines,numeric,pdfLines,candidateScore,suggestCandidates,isNonSpecification,quantityDiff,technicalValues,technicalConflicts};
