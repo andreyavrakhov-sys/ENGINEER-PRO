@@ -40,15 +40,20 @@ function pdfLines(file){const b=fs.readFileSync(file);if(b.length>MAX)throw Erro
  if(pageIds.length>150)warnings.push('Оброблено лише перші 150 сторінок');
  return {lines,warnings,pages:pageIds.length};
 }
-function extractFromLines(lines){const items=[];for(const row of lines){const t=clean(row.text);if(!t||t.length>350)continue;
- // End of line: explicit unit and quantity; preserve raw line for verification.
- const m=t.match(/^(.{5,240}?)\s+(шт\.?|компл\.?|комплект(?:ів|и)?|м\.?п\.?|п\.?м\.?|км|м|m|pcs|м²|м2|м³|м3|кг|т)\s+([\d\s]+(?:[.,]\d+)?)\s*$/iu);
- if(!m)continue;const name=clean(m[1]);if(/^(разом|всього|усього|підсум|найменування)/iu.test(name))continue;
- const qty=numeric(m[3]);if(qty===null)continue;
+// Preserve coordinate-based rows, but reject narrative fragments and environmental tables.
+function documentType(lines){const text=lines.slice(0,250).map(x=>x.text).join(' ').toLowerCase();if(/оцінк[аи] впливу|викид[иів] забруднюючих|охорон[аи] навколишнього середовища/.test(text))return 'environment';if(/специфікаці[яї]|відомість обладнання|відомість матеріалів/.test(text))return 'specification';if(/релейн(ий|ого) захист|автоматик[аи]|рза/.test(text))return 'relay-protection';if(/пояснювальн[аи] записка/.test(text))return 'explanatory';return 'unknown'}
+function extractFromLines(lines){const items=[];let rejected=0;
+ const unit=String.raw`(?:шт\.?|компл\.?|комплект(?:ів|и)?|м\.?п\.?|п\.?м\.?|км|м|m|pcs|м²|м2|м³|м3|кг|т)`;
+ const tail=new RegExp(String.raw`^(.{5,240}?)\s+(${unit})\s+([\d\s]+(?:[.,]\d+)?)\s*$`,'iu');
+ const numberFirst=new RegExp(String.raw`^\s*\d{1,4}[.)]?\s+(.{5,220}?)\s+(${unit})\s+([\d\s]+(?:[.,]\d+)?)\s*$`,'iu');
+ for(const row of lines){const t=clean(row.text);if(!t||t.length>350)continue;
+ const m=t.match(numberFirst)||t.match(tail);if(!m)continue;
+ const name=clean(m[1]);const qty=numeric(m[3]);
+ if(qty===null||/^(разом|всього|усього|підсум|найменування)/iu.test(name)||isNonSpecification({name,source:t})||!/[\p{L}]/u.test(name)){rejected++;continue}
  items.push({name,unit:clean(m[2]),qty,page:row.page||null,line:row.line||null,source:row.text,sourceMethod:row.sourceMethod||'text',confidence:'Потребує перевірки'});
-}return items}
+ }return items}
 async function analyze(file,options={}){if(typeof file!=='string'||!path.isAbsolute(file)||!fs.existsSync(file))throw Error('Файл не знайдено');const ext=path.extname(file).toLowerCase();let items=[],warnings=[],pages=null;
- if(ext==='.pdf'){const pdf=await require('./pdf-enhanced').pdfLines(file,{ocr:options.ocr===true});items=extractFromLines(pdf.lines);warnings=pdf.warnings;pages=pdf.pages;
+ if(ext==='.pdf'){const pdf=await require('./pdf-enhanced').pdfLines(file,{ocr:options.ocr===true});items=extractFromLines(pdf.lines);warnings=pdf.warnings;pages=pdf.pages;var classification=documentType(pdf.lines);if(classification==='environment')warnings.push('Документ класифіковано як екологічний: знайдені рядки не є підтвердженою специфікацією обладнання');
   warnings.unshift('PDF.js: зчитано текстовий шар з координатами. Рядки таблиць та OCR потрібно перевіряти за оригіналом; позиції без назви, одиниці та кількості не розпізнаються.');
  }else if(['.xlsx','.csv'].includes(ext)){
   const d=reader.read(file);const sheets=d.sheets||[{name:path.basename(file),rows:d.rows||[]}];
@@ -60,7 +65,7 @@ async function analyze(file,options={}){if(typeof file!=='string'||!path.isAbsol
    }items.push(...matches.slice(0,1));
   }}warnings.push('Таблиця: автоматично шукаються лише сусідні колонки «найменування / одиниця / кількість»; перевірте заголовки та рядки.');
  }else throw Error('Для специфікацій підтримуються PDF, XLSX і CSV');
- return {file:path.basename(file),pages,items:items.slice(0,5000),totalFound:items.length,warnings};
+ return {file:path.basename(file),pages,items:items.slice(0,5000),totalFound:items.length,warnings,documentType:typeof classification==='undefined'?'table':classification};
 }
 function normalizeName(v){return key(v).replace(/[×хxХфøØ]/g,'x').replace(/(\d),(\d)/g,'$1.$2').replace(/\b(діам(?:етр)?|diameter)\b/g,'d').replace(/\b(шт\.?|штук|pcs)\b/g,' ').replace(/[^\p{L}\p{N}.]+/gu,' ').replace(/\s+/g,' ').trim()}
 const generic=new Set(['для','та','або','від','типу','із','на','по','до','шт','комплект','виріб','монтаж','установка','робіт','обладнання','електричний','електрична','система','робота','виконання','з','у','і','й']);
@@ -112,7 +117,7 @@ function suggestCandidates(item,est){
 }
 function isNonSpecification(item){
  const name=key(item.name);const source=key(item.source||'');
- return /(?:(?:оксид\s+(?:азоту|вуглецю|заліза|марганцю)|(?:азоту|вуглецю|заліза|марганцю)\s+оксид)|фториди\s+неорганічні|діоксид\s+(?:азоту|сірки)|викид[иів]|забруднююч[иа]|гранично\s+допустим)/u.test(name)||(/(?:викиди\s+забруднюючих|забруднюючих\s+речовин)/u.test(source)&&!/(?:кабель|вентилятор|болт|шафа)/u.test(name));
+ return /(?:газоподібні\s+фтористі\s+сполуки|окис\s+хрому|оксид\s+хрому|(?:оксид\s+(?:азоту|вуглецю|заліза|марганцю)|(?:азоту|вуглецю|заліза|марганцю)\s+оксид)|фториди\s+неорганічні|діоксид\s+(?:азоту|сірки)|викид[иів]|забруднююч[иа]|гранично\s+допустим)/u.test(name)||(/(?:викиди\s+забруднюючих|забруднюючих\s+речовин)/u.test(source)&&!/(?:кабель|вентилятор|болт|шафа)/u.test(name));
 }
 function quantityDiff(spec,estimate){const a=numeric(spec.qty),b=numeric(estimate.qty),ua=unitOf(spec.unit),ub=unitOf(estimate.unit);if(a===null||b===null||!ua||!ub)return null;try{const ca=canonical(ua,a),cb=canonical(ub,b);return ca.u===cb.u?Number((ca.q-cb.q).toFixed(6)):null}catch{return null}}
 function compare(spec,estimate){
@@ -152,4 +157,4 @@ function compare(spec,estimate){
  est.forEach((e,i)=>{if(!used.has(i))rows.push({sourceFile:'',name:e.name,unitSpec:'',qtySpec:'',unitEstimate:e.unit||'',qtyEstimate:e.qty??'',diff:null,status:'Позиція кошторису без підтвердженого зіставлення',page:'',line:'',sheet:'',estimateSheet:e.sheet||'',estimateLine:e.line??'',estimateCode:e.code||'',source:'',sourceMethod:'estimate',review:'Не вважати зайвою: перевірити всі креслення та специфікації, зокрема нерозпізнані рядки'})});
  return {rows,summary:{excludedNonSpecification:excluded.length,spec:specs.length,estimate:est.length,matched:rows.filter(x=>x.status==='Текстовий збіг').length,review:rows.filter(x=>x.status!=='Текстовий збіг').length,unmatchedEstimate:rows.filter(x=>x.status==='Позиція кошторису без підтвердженого зіставлення').length}};
 }
-module.exports={analyze,compare,extractFromLines,numeric,pdfLines,candidateScore,suggestCandidates,isNonSpecification,quantityDiff,technicalValues,technicalConflicts};
+module.exports={analyze,compare,documentType,extractFromLines,numeric,pdfLines,candidateScore,suggestCandidates,isNonSpecification,quantityDiff,technicalValues,technicalConflicts};
