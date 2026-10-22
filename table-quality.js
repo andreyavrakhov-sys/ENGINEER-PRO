@@ -7,6 +7,9 @@ function quality(item){
  if(!/[\p{L}]{3,}/u.test(n))issues.push('no-descriptive-word');
  if(tokens.length>=2&&tokens.filter(x=>units.test(x)).length>=Math.ceil(tokens.length*.6))issues.push('unit-only-name');
  if(/^(?:погоджено|розробив|перевірив|інв\.?\s*№|реконструкція\s+пс(?=\s|$))/iu.test(n))issues.push('drawing-title-or-stamp');
+ // Fragments observed in the actual 0.9.14 diagnostic; quarantine, never silently delete.
+ if(/^(?:електрична\s+ра\s+ра\s+\d+|\d+[xх×]\d+[,.]\d+\s+і\s+захисту)$/iu.test(n))issues.push('broken-table-fragment');
+ if(/^(?:характеристика\s*[,;:]|використовуватися\s+\d+\s+[ПP]\s*\d|[-–]?\d+\s*\.\s*\d+\s+КП\s*\d)/iu.test(n))issues.push('incomplete-description');
  if(/^\s*(?:\d+[.,]?\d*\s*)?(?:шафа|кабель|провід|муфта|коробка|вентилятор|конвектор)\s+[\p{L}]\s*$/iu.test(n))issues.push('truncated-name');
  return {reliable:issues.length===0,issues};
 }
