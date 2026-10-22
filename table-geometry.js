@@ -20,7 +20,7 @@ function extractGeometry(row){
   const before=parts.slice(0,i).map(p=>p.str).join(' ');
   const name=tidy(before).replace(/^\d+(?:\.\d+)*\s+/,'');
   if(name.length<5||!/[\p{L}]/u.test(name)||/^(?:найменування|позначення|всього|разом)/iu.test(name))continue;
-  return {name,unit:u,qty,page:row.page||null,line:row.line||null,source:row.text,sourceMethod:'pdfjs-geometry',confidence:'Потребує перевірки',quantitySource:{unitX:parts[i].x,quantityX:parts[qi].x,raw:parts[qi].str},ignoredRight:parts.slice(qi+1).map(p=>p.str).join(' ').slice(0,80)};
+  return {name,unit:u,qty,y:row.y,page:row.page||null,line:row.line||null,source:row.text,sourceMethod:'pdfjs-geometry',confidence:'Потребує перевірки',quantitySource:{unitX:parts[i].x,quantityX:parts[qi].x,raw:parts[qi].str},ignoredRight:parts.slice(qi+1).map(p=>p.str).join(' ').slice(0,80)};
  }
  return null;
 }

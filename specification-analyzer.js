@@ -4,6 +4,7 @@
 const reader=require('./document-reader');
 const {extractGeometry}=require('./table-geometry');
 const {splitQuality}=require('./table-quality');
+const {reconstruct}=require('./table-reconstruction');
 const {parse:parseEstimate,canonical,unit:unitOf}=require('./compare-engine');
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
 const MAX=25*1024*1024;
@@ -71,7 +72,7 @@ function extractFromLines(lines){const items=[];let rejected=0;
  items.push({name,unit:clean(m[2]),qty,page:row.page||null,line:row.line||null,source:row.text,sourceMethod:row.sourceMethod||'text',confidence:'Потребує перевірки'});
  }return items}
 async function analyze(file,options={}){if(typeof file!=='string'||!path.isAbsolute(file)||!fs.existsSync(file))throw Error('Файл не знайдено');const ext=path.extname(file).toLowerCase();let items=[],warnings=[],pages=null,quarantined=[];
- if(ext==='.pdf'){const pdf=await require('./pdf-enhanced').pdfLines(file,{ocr:options.ocr===true});items=extractFromLines(pdf.lines);warnings=pdf.warnings;pages=pdf.pages;var classification=classifyDocument(file,pdf.lines);if(isNarrativeOrEquipmentList(classification)){warnings.push('Документ типу '+classification+': знайдені рядки не використовуються як позиції специфікації для автоматичної звірки');items=[];}else{const unique=deduplicateItems(items);items=unique.items;if(unique.duplicates)warnings.push('Видалено повторів у межах сторінки: '+unique.duplicates);const quality=splitQuality(items);items=quality.accepted;quarantined=quality.quarantined;if(quarantined.length)warnings.push('Карантин ненадійних PDF-рядків: '+quarantined.length+' (не враховано у звірці)');}
+ if(ext==='.pdf'){const pdf=await require('./pdf-enhanced').pdfLines(file,{ocr:options.ocr===true});items=extractFromLines(pdf.lines);const reconstructed=reconstruct(pdf.lines,items);items=reconstructed.items;warnings=pdf.warnings;if(reconstructed.improved)warnings.push('Відновлено найменувань за координатами нумерованих рядків: '+reconstructed.improved);pages=pdf.pages;var classification=classifyDocument(file,pdf.lines);if(isNarrativeOrEquipmentList(classification)){warnings.push('Документ типу '+classification+': знайдені рядки не використовуються як позиції специфікації для автоматичної звірки');items=[];}else{const unique=deduplicateItems(items);items=unique.items;if(unique.duplicates)warnings.push('Видалено повторів у межах сторінки: '+unique.duplicates);const quality=splitQuality(items);items=quality.accepted;quarantined=quality.quarantined;if(quarantined.length)warnings.push('Карантин ненадійних PDF-рядків: '+quarantined.length+' (не враховано у звірці)');}
   warnings.unshift('PDF.js: зчитано текстовий шар з координатами. Рядки таблиць та OCR потрібно перевіряти за оригіналом; позиції без назви, одиниці та кількості не розпізнаються.');
  }else if(['.xlsx','.csv'].includes(ext)){
   const d=reader.read(file);const sheets=d.sheets||[{name:path.basename(file),rows:d.rows||[]}];
