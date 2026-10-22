@@ -16,5 +16,5 @@ const items=extractFromLines(lines);
 assert.strictEqual(items.length,2);
 assert.strictEqual(items[0].qty,125.5);
 assert.strictEqual(items[1].qty,90);
-assert.strictEqual(items[0].sourceMethod,'pdfjs-text');
+assert.strictEqual(items[0].sourceMethod,'pdfjs-geometry');
 console.log('PDF line grouping and specification extraction: 6 checks OK');

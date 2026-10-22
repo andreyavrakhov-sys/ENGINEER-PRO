@@ -18,7 +18,7 @@ function makeLines(items,page){
    if(text && (gap>1.5 || !/\s$/.test(text)))text+=' ';
    text+=p.str;prev=p;
   }
-  return {page,line:i+1,text:tidy(text),sourceMethod:'pdfjs-text'};
+  return {page,line:i+1,text:tidy(text),parts:sorted,sourceMethod:'pdfjs-text'};
  }).filter(x=>x.text);
 }
 async function ocrPage(page,pageNumber,warnings){

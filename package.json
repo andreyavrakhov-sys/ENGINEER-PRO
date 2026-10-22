@@ -1,13 +1,13 @@
 {
   "name": "engineer-pro",
-  "version": "0.9.11",
+  "version": "0.9.12",
   "private": true,
   "description": "ENGINEER PRO desktop with free-provider fallback and GitHub auto-updates",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win nsis --x64",
-    "test": "node test-compare.js && node test-specification.js && node test-pdf-enhanced.js && node test-reconciliation-091.js && node test-reconciliation-092.js && node test-xlsx-093.js && node test-reconciliation-094.js && node test-technical-096.js"
+    "test": "node test-compare.js && node test-specification.js && node test-pdf-enhanced.js && node test-reconciliation-091.js && node test-reconciliation-092.js && node test-xlsx-093.js && node test-reconciliation-094.js && node test-technical-096.js && node test-geometry-0912.js"
   },
   "devDependencies": {
     "electron": "^35.7.5",
@@ -31,7 +31,8 @@
       "sunset-tower.png",
       "specification-analyzer.js",
       "pdf-enhanced.js",
-      "xlsx-report.js"
+      "xlsx-report.js",
+      "table-geometry.js"
     ],
     "win": {
       "target": [

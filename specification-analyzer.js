@@ -2,6 +2,7 @@
 // Conservative extraction: a candidate is reported only when name, unit and quantity
 // are present on the same source line. No OCR, no inference of quantities.
 const reader=require('./document-reader');
+const {extractGeometry}=require('./table-geometry');
 const {parse:parseEstimate,canonical,unit:unitOf}=require('./compare-engine');
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
 const MAX=25*1024*1024;
@@ -47,6 +48,9 @@ function extractFromLines(lines){const items=[];let rejected=0;
  const tail=new RegExp(String.raw`^(.{5,240}?)\s+(${unit})\s+([\d\s]+(?:[.,]\d+)?)\s*$`,'iu');
  const numberFirst=new RegExp(String.raw`^\s*\d{1,4}[.)]?\s+(.{5,220}?)\s+(${unit})\s+([\d\s]+(?:[.,]\d+)?)\s*$`,'iu');
  for(const row of lines){const t=clean(row.text);if(!t||t.length>350)continue;
+ const geometry=extractGeometry(row);if(geometry){if(!isNonSpecification(geometry))items.push(geometry);else rejected++;continue;}
+ // Never infer quantities from a flattened PDF row with lost column boundaries.
+ if(row.parts&&row.parts.length>1)continue;
  const m=t.match(numberFirst)||t.match(tail);if(!m)continue;
  const name=clean(m[1]);const qty=numeric(m[3]);
  if(qty===null||/^(разом|всього|усього|підсум|найменування)/iu.test(name)||isNonSpecification({name,source:t})||!/[\p{L}]/u.test(name)){rejected++;continue}
@@ -157,4 +161,4 @@ function compare(spec,estimate){
  est.forEach((e,i)=>{if(!used.has(i))rows.push({sourceFile:'',name:e.name,unitSpec:'',qtySpec:'',unitEstimate:e.unit||'',qtyEstimate:e.qty??'',diff:null,status:'Позиція кошторису без підтвердженого зіставлення',page:'',line:'',sheet:'',estimateSheet:e.sheet||'',estimateLine:e.line??'',estimateCode:e.code||'',source:'',sourceMethod:'estimate',review:'Не вважати зайвою: перевірити всі креслення та специфікації, зокрема нерозпізнані рядки'})});
  return {rows,summary:{excludedNonSpecification:excluded.length,spec:specs.length,estimate:est.length,matched:rows.filter(x=>x.status==='Текстовий збіг').length,review:rows.filter(x=>x.status!=='Текстовий збіг').length,unmatchedEstimate:rows.filter(x=>x.status==='Позиція кошторису без підтвердженого зіставлення').length}};
 }
-module.exports={analyze,compare,documentType,extractFromLines,numeric,pdfLines,candidateScore,suggestCandidates,isNonSpecification,quantityDiff,technicalValues,technicalConflicts};
+module.exports={analyze,compare,documentType,extractFromLines,extractGeometry,numeric,pdfLines,candidateScore,suggestCandidates,isNonSpecification,quantityDiff,technicalValues,technicalConflicts};
