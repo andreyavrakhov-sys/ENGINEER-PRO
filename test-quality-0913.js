@@ -1,0 +1,10 @@
+'use strict';
+const assert=require('assert');const a=require('./specification-analyzer');
+assert.equal(a.classifyDocument('8_128-РЕС-РП_3.003500.111-ПОБ.pdf',[{text:'релейний захист автоматика'}]),'construction-organization');
+assert.equal(a.classifyDocument('9_128-РЕС-РП_3.003500.111-РЗА.pdf'),'relay-protection');
+assert.equal(a.classifyDocument('4_128-РЕС-РП_3.003500.111-ЕМ_06.11.2025.pdf'),'specification');
+const fan=a.compare({items:[{name:'Вентилятор осьовий 140Вт, 220VAC, IP44 WOKS Ø400',unit:'шт',qty:4}]},{items:[{name:'Вентилятор осьовий 140Вт, 220VAC, IP44 WOKS Ф400',unit:'шт',qty:4}]});
+assert.equal(fan.summary.highConfidence,1);assert.equal(fan.summary.matched,0);
+const conflict=a.compare({items:[{name:'Вентилятор осьовий 140Вт 220VAC IP44 WOKS Ø400',unit:'шт',qty:4}]},{items:[{name:'Вентилятор осьовий 140Вт 220VAC IP44 WOKS Ф400',unit:'шт',qty:5}]});assert.equal(conflict.summary.highConfidence,0);
+const duplicate=a.deduplicateItems([{name:'Конвектор Термія',unit:'шт',qty:8,page:26},{name:'Конвектор Термія',unit:'шт',qty:8,page:26},{name:'Конвектор Термія',unit:'шт',qty:8,page:27}]);assert.equal(duplicate.items.length,2);
+console.log('PASS quality 0.9.13');
