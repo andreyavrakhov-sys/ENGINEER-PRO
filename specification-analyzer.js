@@ -31,7 +31,7 @@ function pdfLines(file){const b=fs.readFileSync(file);if(b.length>MAX)throw Erro
  const pageIds=[...objects].filter(([,v])=>/\/Type\s*\/Page\b/.test(v)&&!/\/Type\s*\/Pages\b/.test(v)).map(([id])=>id);
  const lines=[],warnings=[];
  if(!pageIds.length){warnings.push('Неможливо визначити сторінки PDF; джерела не встановлено');return {lines,warnings,pages:0}}
- for(let pi=0;pi<Math.min(pageIds.length,150);pi++){
+ for(let pi=0;pi<Math.min(pageIds.length,1000);pi++){
   const obj=objects.get(pageIds[pi]);const block=(obj.match(/\/Contents\s*(\[[^\]]*\]|\d+\s+\d+\s+R)/)||[])[1]||'';
   const refs=[...block.matchAll(/(\d+)\s+\d+\s+R/g)].map(m=>+m[1]);let found=false;
   for(const id of refs){const stream=objects.get(id)||'';const m=stream.match(/stream\r?\n([\s\S]*?)\r?\n?endstream/);if(!m)continue;
@@ -42,7 +42,7 @@ function pdfLines(file){const b=fs.readFileSync(file);if(b.length>MAX)throw Erro
   }
   if(!found)warnings.push('Сторінка '+(pi+1)+': текст не прочитано (скан, шрифт або складна структура PDF)');
  }
- if(pageIds.length>150)warnings.push('Оброблено лише перші 150 сторінок');
+ if(pageIds.length>1000)warnings.push('Оброблено лише перші 150 сторінок');
  return {lines,warnings,pages:pageIds.length};
 }
 // Preserve coordinate-based rows, but reject narrative fragments and environmental tables.
@@ -51,7 +51,7 @@ function documentType(lines){const text=lines.slice(0,250).map(x=>x.text).join('
 function classifyDocument(file,lines=[]){
  const base=path.basename(String(file||''),path.extname(String(file||''))).toUpperCase();
  const section=(base.match(/(?:^|[-_])(?:\d+(?:[._]\d+)*[-_])?(ПОБ|РЗА|ПЗ|ЕТР|ЕМ|РЗ|ОС|ЕЗ|КБ)(?=[-_]|$)/u)||[])[1];
- const types={ПОБ:'construction-organization',РЗА:'relay-protection',ПЗ:'explanatory',ЕТР:'specification',ЕМ:'specification',РЗ:'specification',ОС:'specification',ЕЗ:'unknown',КБ:'specification'};
+ const types={ПОБ:'construction-organization',РЗА:'relay-protection',ПЗ:'explanatory',ЕТР:'specification',ЕМ:'specification',РЗ:'specification',ОС:'specification',ЕЗ:'specification',КБ:'specification'};
  return section?types[section]:documentType(lines);
 }
 function isNarrativeOrEquipmentList(type){return ['construction-organization','environment','explanatory'].includes(type)}

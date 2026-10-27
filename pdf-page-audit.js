@@ -18,10 +18,10 @@ function auditPages(lines,pages,accepted=[],quarantined=[]){
  }
  for(const x of accepted||[]){const g=groups.get(x.page);if(g)g.accepted++}
  for(const x of quarantined||[]){const g=groups.get(x.page);if(g)g.quarantined++}
- const output=[];for(let page=1;page<=Math.min(Number(pages)||0,150);page++){
+ const output=[];for(let page=1;page<=Math.min(Number(pages)||0,1000);page++){
   const g=groups.get(page)||{page,lines:0,textChars:0,geometryAnchors:0,unparsedAnchors:0,accepted:0,quarantined:0,anchorExamples:[]};
   g.status=g.geometryAnchors>0&&g.accepted===0?'table-anchors-without-accepted-items':g.textChars<40?'low-text-layer':g.geometryAnchors===0?'no-table-anchors':'parsed-some';output.push(g);
  }
- return {pagesScanned:output.length,lowTextLayer:output.filter(x=>x.status==='low-text-layer').length,tableAnchorsWithoutAcceptedItems:output.filter(x=>x.status==='table-anchors-without-accepted-items').length,unparsedAnchors:output.reduce((n,x)=>n+x.unparsedAnchors,0),problemPages:output.filter(x=>x.status==='table-anchors-without-accepted-items'||x.status==='low-text-layer').slice(0,30)};
+ return {pagesTotal:Number(pages)||0,pagesScanned:output.length,pagesNotScanned:Math.max(0,(Number(pages)||0)-output.length),lowTextLayer:output.filter(x=>x.status==='low-text-layer').length,tableAnchorsWithoutAcceptedItems:output.filter(x=>x.status==='table-anchors-without-accepted-items').length,unparsedAnchors:output.reduce((n,x)=>n+x.unparsedAnchors,0),problemPages:output.filter(x=>x.status==='table-anchors-without-accepted-items'||x.status==='low-text-layer').slice(0,30)};
 }
 module.exports={auditPages};

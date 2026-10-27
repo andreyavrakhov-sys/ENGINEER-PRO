@@ -2,7 +2,7 @@
 // Structured PDF text extraction with optional, explicitly requested OCR.
 // No fabricated units/quantities: downstream parser accepts only complete rows.
 const fs=require('fs'),path=require('path');
-const MAX=25*1024*1024, MAX_PAGES=150, OCR_PAGES=12;
+const MAX=25*1024*1024, MAX_PAGES=1000, OCR_PAGES=12;
 function tidy(v){return String(v||'').replace(/\s+/g,' ').trim()}
 function requirePdf(){try{return require('pdfjs-dist/legacy/build/pdf.js')}catch(e){throw Error('PDF.js недоступний. Перевірте встановлення залежності pdfjs-dist: '+e.message)}}
 function makeLines(items,page){
