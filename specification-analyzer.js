@@ -6,6 +6,7 @@ const {extractGeometry}=require('./table-geometry');
 const {splitQuality}=require('./table-quality');
 const {reconstruct}=require('./table-reconstruction');
 const {applySectionBoundaries}=require('./table-boundaries');
+const {auditPages}=require('./pdf-page-audit');
 const {parse:parseEstimate,canonical,unit:unitOf}=require('./compare-engine');
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
 const MAX=25*1024*1024;
@@ -72,9 +73,9 @@ function extractFromLines(lines){const items=[];let rejected=0;
  if(qty===null||/^(разом|всього|усього|підсум|найменування)/iu.test(name)||isNonSpecification({name,source:t})||!/[\p{L}]/u.test(name)){rejected++;continue}
  items.push({name,unit:clean(m[2]),qty,page:row.page||null,line:row.line||null,source:row.text,sourceMethod:row.sourceMethod||'text',confidence:'Потребує перевірки'});
  }return items}
-async function analyze(file,options={}){if(typeof file!=='string'||!path.isAbsolute(file)||!fs.existsSync(file))throw Error('Файл не знайдено');const ext=path.extname(file).toLowerCase();let items=[],warnings=[],pages=null,quarantined=[];
+async function analyze(file,options={}){if(typeof file!=='string'||!path.isAbsolute(file)||!fs.existsSync(file))throw Error('Файл не знайдено');const ext=path.extname(file).toLowerCase();let items=[],warnings=[],pages=null,quarantined=[],pageAudit=null;
  if(ext==='.pdf'){const pdf=await require('./pdf-enhanced').pdfLines(file,{ocr:options.ocr===true});items=extractFromLines(pdf.lines);const reconstructed=reconstruct(pdf.lines,items);items=reconstructed.items;const boundaries=applySectionBoundaries(items);items=boundaries.items;warnings=pdf.warnings;if(boundaries.cleaned)warnings.push('Відокремлено заголовків розділів від назв обладнання: '+boundaries.cleaned);if(reconstructed.improved)warnings.push('Безпечно відновлено найменувань: '+reconstructed.improved);if(reconstructed.ambiguous)warnings.push('Не об’єднано неоднозначних рядків (кілька позицій в інтервалі): '+reconstructed.ambiguous);if(reconstructed.cleaned)warnings.push('Очищено назв від штампів: '+reconstructed.cleaned);pages=pdf.pages;var classification=classifyDocument(file,pdf.lines);if(isNarrativeOrEquipmentList(classification)){warnings.push('Документ типу '+classification+': знайдені рядки не використовуються як позиції специфікації для автоматичної звірки');items=[];}else{const unique=deduplicateItems(items);items=unique.items;if(unique.duplicates)warnings.push('Видалено повторів у межах сторінки: '+unique.duplicates);const quality=splitQuality(items);items=quality.accepted;quarantined=quality.quarantined;if(quarantined.length)warnings.push('Карантин ненадійних PDF-рядків: '+quarantined.length+' (не враховано у звірці)');}
-  warnings.unshift('PDF.js: зчитано текстовий шар з координатами. Рядки таблиць та OCR потрібно перевіряти за оригіналом; позиції без назви, одиниці та кількості не розпізнаються.');
+  pageAudit=auditPages(pdf.lines,pages,items,quarantined);if(pageAudit.tableAnchorsWithoutAcceptedItems)warnings.push('Сторінок з геометричними якорями таблиць без прийнятих позицій: '+pageAudit.tableAnchorsWithoutAcceptedItems);warnings.unshift('PDF.js: зчитано текстовий шар з координатами. Рядки таблиць та OCR потрібно перевіряти за оригіналом; позиції без назви, одиниці та кількості не розпізнаються.');
  }else if(['.xlsx','.csv'].includes(ext)){
   const d=reader.read(file);const sheets=d.sheets||[{name:path.basename(file),rows:d.rows||[]}];
   for(const sheet of sheets){const rows=sheet.rows||[];for(let i=0;i<rows.length;i++){
@@ -85,7 +86,7 @@ async function analyze(file,options={}){if(typeof file!=='string'||!path.isAbsol
    }items.push(...matches.slice(0,1));
   }}warnings.push('Таблиця: автоматично шукаються лише сусідні колонки «найменування / одиниця / кількість»; перевірте заголовки та рядки.');
  }else throw Error('Для специфікацій підтримуються PDF, XLSX і CSV');
- return {file:path.basename(file),pages,items:items.slice(0,5000),totalFound:items.length,quarantinedCount:quarantined.length,quarantinedSamples:quarantined.slice(0,15).map(x=>({page:x.page,line:x.line,name:x.name,issues:x.qualityIssues})),warnings,documentType:typeof classification==='undefined'?'table':classification};
+ return {file:path.basename(file),pages,items:items.slice(0,5000),totalFound:items.length,quarantinedCount:quarantined.length,pageAudit,quarantinedSamples:quarantined.slice(0,15).map(x=>({page:x.page,line:x.line,name:x.name,issues:x.qualityIssues})),warnings,documentType:typeof classification==='undefined'?'table':classification};
 }
 function normalizeName(v){return key(v).replace(/[×хxХфøØ]/g,'x').replace(/(\d),(\d)/g,'$1.$2').replace(/\b(діам(?:етр)?|diameter)\b/g,'d').replace(/\b(шт\.?|штук|pcs)\b/g,' ').replace(/[^\p{L}\p{N}.]+/gu,' ').replace(/\s+/g,' ').trim()}
 const generic=new Set(['для','та','або','від','типу','із','на','по','до','шт','комплект','виріб','монтаж','установка','робіт','обладнання','електричний','електрична','система','робота','виконання','з','у','і','й']);

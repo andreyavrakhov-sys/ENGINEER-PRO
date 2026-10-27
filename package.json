@@ -1,13 +1,13 @@
 {
   "name": "engineer-pro",
-  "version": "0.9.18",
+  "version": "0.9.19",
   "private": true,
   "description": "ENGINEER PRO desktop with free-provider fallback and GitHub auto-updates",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win nsis --x64",
-    "test": "node test-compare.js && node test-specification.js && node test-pdf-enhanced.js && node test-reconciliation-091.js && node test-reconciliation-092.js && node test-xlsx-093.js && node test-reconciliation-094.js && node test-technical-096.js && node test-geometry-0912.js && node test-quality-0913.js && node test-quality-0914.js && node test-quality-0915.js && node test-reconstruction-0916.js && node test-reconstruction-0917.js && node test-boundaries-0918.js"
+    "test": "node test-compare.js && node test-specification.js && node test-pdf-enhanced.js && node test-reconciliation-091.js && node test-reconciliation-092.js && node test-xlsx-093.js && node test-reconciliation-094.js && node test-technical-096.js && node test-geometry-0912.js && node test-quality-0913.js && node test-quality-0914.js && node test-quality-0915.js && node test-reconstruction-0916.js && node test-reconstruction-0917.js && node test-boundaries-0918.js && node test-page-audit-0919.js"
   },
   "devDependencies": {
     "electron": "^35.7.5",
@@ -35,7 +35,8 @@
       "table-geometry.js",
       "table-quality.js",
       "table-reconstruction.js",
-      "table-boundaries.js"
+      "table-boundaries.js",
+      "pdf-page-audit.js"
     ],
     "win": {
       "target": [
