@@ -1,0 +1,10 @@
+'use strict';const assert=require('assert');const {reconstruct,cleanName}=require('./table-reconstruction');
+const mk=(line,y,parts)=>({page:27,line,y,parts:parts.map(([x,str])=>({x,str,width:str.length*3}))});
+const lines=[mk(1,500,[[70,'2.1'],[110,'Муфта кінцева'],[700,'шт'],[780,'4']]),mk(2,490,[[110,'Гофрована труба ПВХ'],[700,'м'],[780,'99']]),mk(3,480,[[110,'Короб з кришкою'],[700,'шт'],[780,'13']]),mk(4,470,[[70,'2.2'],[110,'Конвектор Термія'],[700,'шт'],[780,'8']])];
+const item=(line,name,qty)=>({page:27,line,y:510-line*10,name,unit:'шт',qty,sourceMethod:'pdfjs-geometry',quantitySource:{unitX:700}});
+const r=reconstruct(lines,[item(1,'Муфта кінцева',4),item(2,'Гофрована труба ПВХ',99),item(3,'Короб з кришкою',13)]);
+assert.equal(r.improved,0);assert(r.ambiguous>=3);assert.equal(r.items[0].name,'Муфта кінцева');assert(!r.items[0].name.includes('Гофрована'));
+assert.equal(cleanName('Коробка Ø80 Зм. Кільк. Арк. №док. Підпис Дата'),'Коробка Ø80');
+const good=[mk(1,500,[[70,'1.2'],[110,'Шафа власних потреб'],[700,'шт'],[780,'1']]),mk(2,490,[[110,'габаритами 600х250х1200']]),mk(3,480,[[70,'1.3'],[110,'Конвектор'],[700,'шт'],[780,'8']])];
+const a=reconstruct(good,[item(1,'Шафа власних потреб',1)]);assert.equal(a.improved,1);assert.match(a.items[0].name,/600х250х1200/);assert(!a.items[0].name.includes('Конвектор'));
+console.log('PASS: ambiguous rows are not merged; stamps removed; unique rows reconstructed');
